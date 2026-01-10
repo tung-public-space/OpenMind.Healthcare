@@ -16,7 +16,7 @@ import {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:5000/api';
+  private baseUrl = 'http://localhost:3003/api';
   
   private progressSubject = new BehaviorSubject<UserProgress | null>(null);
   public progress$ = this.progressSubject.asObservable();
