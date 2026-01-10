@@ -1,41 +1,27 @@
-using QuitSmokingApi.Models;
+using MediatR;
+using QuitSmokingApi.Features.Motivation.Domain;
+using QuitSmokingApi.Features.Motivation.GetRandomQuote;
+using QuitSmokingApi.Features.Progress.Domain;
+using QuitSmokingApi.Features.Progress.GetStats;
+using QuitSmokingApi.Infrastructure.Data;
 
-namespace QuitSmokingApi.Services;
+namespace QuitSmokingApi.Features.Motivation.GetDailyEncouragement;
 
-public interface IMotivationService
+public class GetDailyEncouragementHandler : IRequestHandler<GetDailyEncouragementQuery, DailyEncouragement>
 {
-    Task<MotivationalQuote> GetRandomQuoteAsync();
-    Task<List<CravingTip>> GetCravingTipsAsync();
-    Task<DailyEncouragement> GetDailyEncouragementAsync();
-}
+    private readonly AppDbContext _context;
+    private readonly IMediator _mediator;
 
-public class MotivationService : IMotivationService
-{
-    private readonly Data.AppDbContext _context;
-    private readonly IProgressService _progressService;
-
-    public MotivationService(Data.AppDbContext context, IProgressService progressService)
+    public GetDailyEncouragementHandler(AppDbContext context, IMediator mediator)
     {
         _context = context;
-        _progressService = progressService;
+        _mediator = mediator;
     }
 
-    public async Task<MotivationalQuote> GetRandomQuoteAsync()
+    public async Task<DailyEncouragement> Handle(GetDailyEncouragementQuery request, CancellationToken cancellationToken)
     {
-        var quotes = _context.MotivationalQuotes.ToList();
-        var random = new Random();
-        return quotes[random.Next(quotes.Count)];
-    }
-
-    public async Task<List<CravingTip>> GetCravingTipsAsync()
-    {
-        return _context.CravingTips.ToList();
-    }
-
-    public async Task<DailyEncouragement> GetDailyEncouragementAsync()
-    {
-        var stats = await _progressService.GetProgressStatsAsync();
-        var quote = await GetRandomQuoteAsync();
+        var stats = await _mediator.Send(new GetStatsQuery(), cancellationToken);
+        var quote = await _mediator.Send(new GetRandomQuoteQuery(), cancellationToken);
         var tips = _context.CravingTips.ToList();
         var random = new Random();
         
@@ -53,10 +39,8 @@ public class MotivationService : IMotivationService
         return encouragement;
     }
 
-    private string GenerateEncouragementMessage(ProgressStats stats)
+    private static string GenerateEncouragementMessage(ProgressStats stats)
     {
-        var messages = new List<string>();
-
         if (stats.DaysSmokeFree == 0)
         {
             return "Today is Day 1! Every journey begins with a single step. You've made the most important decision of your life. Stay strong! 💪";
@@ -87,7 +71,7 @@ public class MotivationService : IMotivationService
         }
     }
 
-    private string GenerateSpecialMessage(ProgressStats stats)
+    private static string GenerateSpecialMessage(ProgressStats stats)
     {
         if (stats.DaysSmokeFree == 7)
             return "🎉 MILESTONE: ONE WEEK! Your taste and smell are improving!";

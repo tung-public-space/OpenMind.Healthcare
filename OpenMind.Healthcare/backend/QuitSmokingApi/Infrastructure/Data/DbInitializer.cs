@@ -1,6 +1,7 @@
-using QuitSmokingApi.Models;
+using QuitSmokingApi.Features.Achievements.Domain;
+using QuitSmokingApi.Features.Motivation.Domain;
 
-namespace QuitSmokingApi.Data;
+namespace QuitSmokingApi.Infrastructure.Data;
 
 public static class DbInitializer
 {

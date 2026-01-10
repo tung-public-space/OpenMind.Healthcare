@@ -1,4 +1,4 @@
-namespace QuitSmokingApi.Models;
+namespace QuitSmokingApi.Features.Motivation.Domain;
 
 public class MotivationalQuote
 {

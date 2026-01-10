@@ -1,29 +1,30 @@
 using Microsoft.EntityFrameworkCore;
-using QuitSmokingApi.Data;
-using QuitSmokingApi.Services;
+using QuitSmokingApi.Features.Achievements;
+using QuitSmokingApi.Features.Motivation;
+using QuitSmokingApi.Features.Progress;
+using QuitSmokingApi.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add SQLite Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=quitSmoking.db"));
+// Add MediatR for vertical slice architecture
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-// Add services
-builder.Services.AddScoped<IProgressService, ProgressService>();
-builder.Services.AddScoped<IAchievementService, AchievementService>();
-builder.Services.AddScoped<IMotivationService, MotivationService>();
+// Add SQLite Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Data Source=quitSmoking.db";
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "http://localhost", "http://localhost:80")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -39,8 +40,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAngular");
-app.UseAuthorization();
-app.MapControllers();
+
+// Map feature endpoints (vertical slices)
+app.MapProgressEndpoints();
+app.MapAchievementsEndpoints();
+app.MapMotivationEndpoints();
 
 // Initialize database
 using (var scope = app.Services.CreateScope())

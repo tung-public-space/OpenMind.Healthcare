@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./backend/QuitSmokingApi
+      dockerfile: Dockerfile
+    container_name: quitsmoking-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - sqlite-data:/app/data
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/quitSmoking.db
+    restart: unless-stopped
+    networks:
+      - quitsmoking-network
+
+  ui:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quitsmoking-ui
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - quitsmoking-network
+
+volumes:
+  sqlite-data:
+    driver: local
+
+networks:
+  quitsmoking-network:
+    driver: bridge

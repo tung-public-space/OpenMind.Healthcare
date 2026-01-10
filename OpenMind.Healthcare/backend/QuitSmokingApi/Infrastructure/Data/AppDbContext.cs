@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using QuitSmokingApi.Models;
+using QuitSmokingApi.Features.Achievements.Domain;
+using QuitSmokingApi.Features.Motivation.Domain;
+using QuitSmokingApi.Features.Progress.Domain;
 
-namespace QuitSmokingApi.Data;
+namespace QuitSmokingApi.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {

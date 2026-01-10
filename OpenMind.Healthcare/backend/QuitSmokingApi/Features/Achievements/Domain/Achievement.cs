@@ -1,4 +1,4 @@
-namespace QuitSmokingApi.Models;
+namespace QuitSmokingApi.Features.Achievements.Domain;
 
 public class Achievement
 {
