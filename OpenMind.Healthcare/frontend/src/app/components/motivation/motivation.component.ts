@@ -1,0 +1,410 @@
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../services/api.service';
+import { MotivationalQuote, ProgressStats } from '../../models/models';
+
+@Component({
+  selector: 'app-motivation',
+  template: `
+    <div class="motivation-page fade-in">
+      <div class="page-header">
+        <h1>💪 Stay Motivated</h1>
+        <p>Remember why you started this journey</p>
+      </div>
+
+      <!-- Quote of the day -->
+      <div class="quote-section card">
+        <div class="quote-icon float">💬</div>
+        <blockquote *ngIf="currentQuote">
+          "{{ currentQuote.quote }}"
+          <cite>— {{ currentQuote.author }}</cite>
+        </blockquote>
+        <button class="btn btn-secondary" (click)="getNewQuote()">
+          🔄 New Quote
+        </button>
+      </div>
+
+      <!-- Stats reminder -->
+      <div class="stats-reminder" *ngIf="stats">
+        <h2>Look How Far You've Come! 🌟</h2>
+        <div class="reminder-stats">
+          <div class="reminder-stat">
+            <span class="big-number">{{ stats.daysSmokeFree }}</span>
+            <span class="stat-text">Days of Freedom</span>
+          </div>
+          <div class="reminder-stat gold">
+            <span class="big-number">\${{ stats.moneySaved | number:'1.0-0' }}</span>
+            <span class="stat-text">Money Saved</span>
+          </div>
+          <div class="reminder-stat blue">
+            <span class="big-number">{{ stats.cigarettesNotSmoked | number }}</span>
+            <span class="stat-text">Cigarettes NOT Smoked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reasons to stay quit -->
+      <div class="reasons-section card">
+        <h2>🎯 Remember Your Reasons</h2>
+        <div class="reasons-grid">
+          <div class="reason-card">
+            <span class="reason-icon">🫀</span>
+            <h4>Better Health</h4>
+            <p>Your heart, lungs, and every organ is healing right now</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">💰</span>
+            <h4>Save Money</h4>
+            <p>Think of all the things you can do with the money saved</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">👨‍👩‍👧‍👦</span>
+            <h4>For Your Loved Ones</h4>
+            <p>Be there for the people who care about you</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">🏃</span>
+            <h4>More Energy</h4>
+            <p>Feel alive, active, and full of energy</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">😤</span>
+            <h4>Freedom</h4>
+            <p>No more being controlled by nicotine addiction</p>
+          </div>
+          <div class="reason-card">
+            <span class="reason-icon">✨</span>
+            <h4>Self-Pride</h4>
+            <p>Prove to yourself that you can overcome anything</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Affirmations -->
+      <div class="affirmations-section">
+        <h2>🌈 Daily Affirmations</h2>
+        <div class="affirmations-list">
+          <div class="affirmation" *ngFor="let affirmation of affirmations">
+            <span class="check">✓</span>
+            {{ affirmation }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Milestones reminder -->
+      <div class="milestones-preview card">
+        <h2>🏆 Upcoming Milestones</h2>
+        <div class="milestone-list">
+          <div class="milestone-item" *ngFor="let milestone of upcomingMilestones">
+            <span class="milestone-icon">{{ milestone.icon }}</span>
+            <div class="milestone-info">
+              <strong>{{ milestone.name }}</strong>
+              <span>{{ milestone.daysAway }} days away</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .motivation-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+      
+      h1 {
+        font-size: 36px;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 18px;
+      }
+    }
+
+    .quote-section {
+      text-align: center;
+      padding: 50px;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+      border-color: rgba(59, 130, 246, 0.3);
+      
+      .quote-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+        display: block;
+      }
+      
+      blockquote {
+        font-size: 24px;
+        font-style: italic;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 25px;
+        
+        cite {
+          display: block;
+          margin-top: 15px;
+          font-size: 16px;
+          font-style: normal;
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+    }
+
+    .stats-reminder {
+      text-align: center;
+      margin-bottom: 30px;
+      
+      h2 {
+        font-size: 24px;
+        margin-bottom: 25px;
+        color: #10b981;
+      }
+    }
+
+    .reminder-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .reminder-stat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 20px;
+      padding: 30px 40px;
+      text-align: center;
+      min-width: 200px;
+      
+      .big-number {
+        display: block;
+        font-size: 42px;
+        font-weight: 700;
+        color: #10b981;
+        line-height: 1.2;
+      }
+      
+      .stat-text {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 5px;
+      }
+      
+      &.gold {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
+        border-color: rgba(245, 158, 11, 0.3);
+        .big-number { color: #f59e0b; }
+      }
+      
+      &.blue {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(96, 165, 250, 0.1));
+        border-color: rgba(59, 130, 246, 0.3);
+        .big-number { color: #3b82f6; }
+      }
+    }
+
+    .reasons-section {
+      margin-bottom: 30px;
+      
+      h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 24px;
+      }
+    }
+
+    .reasons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .reason-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+      }
+      
+      .reason-icon {
+        font-size: 40px;
+        display: block;
+        margin-bottom: 15px;
+      }
+      
+      h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #60a5fa;
+      }
+      
+      p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+      }
+    }
+
+    .affirmations-section {
+      margin-bottom: 30px;
+      
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 24px;
+      }
+    }
+
+    .affirmations-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .affirmation {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 18px 25px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(10px);
+      }
+      
+      .check {
+        color: #10b981;
+        font-weight: bold;
+        font-size: 20px;
+      }
+    }
+
+    .milestones-preview {
+      h2 {
+        margin-bottom: 25px;
+        font-size: 22px;
+        text-align: center;
+      }
+    }
+
+    .milestone-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      
+      .milestone-icon {
+        font-size: 36px;
+      }
+      
+      .milestone-info {
+        strong {
+          display: block;
+          font-size: 16px;
+          margin-bottom: 4px;
+          color: #f59e0b;
+        }
+        
+        span {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+      }
+    }
+
+    @media (max-width: 600px) {
+      .reminder-stats {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .quote-section blockquote {
+        font-size: 18px;
+      }
+    }
+  `]
+})
+export class MotivationComponent implements OnInit {
+  currentQuote: MotivationalQuote | null = null;
+  stats: ProgressStats | null = null;
+  
+  affirmations = [
+    "I am stronger than my cravings",
+    "Every smoke-free day makes me healthier",
+    "I choose life and health over addiction",
+    "I am proud of how far I've come",
+    "My lungs are healing with every breath",
+    "I deserve a smoke-free, healthy life",
+    "I am in control of my choices",
+    "Each day smoke-free is a victory"
+  ];
+
+  upcomingMilestones: any[] = [];
+
+  constructor(private apiService: ApiService) {}
+
+  ngOnInit(): void {
+    this.getNewQuote();
+    this.loadStats();
+    this.loadMilestones();
+  }
+
+  getNewQuote(): void {
+    this.apiService.getRandomQuote().subscribe({
+      next: (quote) => {
+        this.currentQuote = quote;
+      }
+    });
+  }
+
+  loadStats(): void {
+    this.apiService.getStats().subscribe({
+      next: (stats) => {
+        this.stats = stats;
+      }
+    });
+  }
+
+  loadMilestones(): void {
+    this.apiService.getAchievements().subscribe({
+      next: (achievements) => {
+        this.apiService.getStats().subscribe({
+          next: (stats) => {
+            this.upcomingMilestones = achievements
+              .filter(a => !a.isUnlocked)
+              .slice(0, 3)
+              .map(a => ({
+                ...a,
+                daysAway: a.requiredDays - stats.daysSmokeFree
+              }));
+          }
+        });
+      }
+    });
+  }
+}

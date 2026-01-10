@@ -1,0 +1,109 @@
+using QuitSmokingApi.Models;
+
+namespace QuitSmokingApi.Services;
+
+public interface IMotivationService
+{
+    Task<MotivationalQuote> GetRandomQuoteAsync();
+    Task<List<CravingTip>> GetCravingTipsAsync();
+    Task<DailyEncouragement> GetDailyEncouragementAsync();
+}
+
+public class MotivationService : IMotivationService
+{
+    private readonly Data.AppDbContext _context;
+    private readonly IProgressService _progressService;
+
+    public MotivationService(Data.AppDbContext context, IProgressService progressService)
+    {
+        _context = context;
+        _progressService = progressService;
+    }
+
+    public async Task<MotivationalQuote> GetRandomQuoteAsync()
+    {
+        var quotes = _context.MotivationalQuotes.ToList();
+        var random = new Random();
+        return quotes[random.Next(quotes.Count)];
+    }
+
+    public async Task<List<CravingTip>> GetCravingTipsAsync()
+    {
+        return _context.CravingTips.ToList();
+    }
+
+    public async Task<DailyEncouragement> GetDailyEncouragementAsync()
+    {
+        var stats = await _progressService.GetProgressStatsAsync();
+        var quote = await GetRandomQuoteAsync();
+        var tips = _context.CravingTips.ToList();
+        var random = new Random();
+        
+        // Get 3 random tips
+        var randomTips = tips.OrderBy(x => random.Next()).Take(3).ToList();
+
+        var encouragement = new DailyEncouragement
+        {
+            Message = GenerateEncouragementMessage(stats),
+            Quote = quote,
+            Tips = randomTips,
+            SpecialMessage = GenerateSpecialMessage(stats)
+        };
+
+        return encouragement;
+    }
+
+    private string GenerateEncouragementMessage(ProgressStats stats)
+    {
+        var messages = new List<string>();
+
+        if (stats.DaysSmokeFree == 0)
+        {
+            return "Today is Day 1! Every journey begins with a single step. You've made the most important decision of your life. Stay strong! 💪";
+        }
+        else if (stats.DaysSmokeFree == 1)
+        {
+            return "Congratulations on completing your first day! The first 24 hours are the hardest. You're already proving you can do this! 🎉";
+        }
+        else if (stats.DaysSmokeFree < 7)
+        {
+            return $"Amazing! {stats.DaysSmokeFree} days smoke-free! You've already avoided {stats.CigarettesNotSmoked} cigarettes and saved ${stats.MoneySaved}. Keep pushing through! 💪";
+        }
+        else if (stats.DaysSmokeFree < 14)
+        {
+            return $"Week one complete! You're in week {stats.DaysSmokeFree / 7 + 1} now. Your body is already healing. You've saved ${stats.MoneySaved} and gained {stats.LifeRegainedFormatted} of life! 🌟";
+        }
+        else if (stats.DaysSmokeFree < 30)
+        {
+            return $"Incredible progress! {stats.DaysSmokeFree} days strong! You're proving that you're stronger than any craving. ${stats.MoneySaved} saved and counting! 🏆";
+        }
+        else if (stats.DaysSmokeFree < 90)
+        {
+            return $"Over a month smoke-free! {stats.DaysSmokeFree} days of freedom. Your lungs are thanking you every breath. You've saved ${stats.MoneySaved}! 🎊";
+        }
+        else
+        {
+            return $"Legendary status! {stats.DaysSmokeFree} days smoke-free! You've transformed your life. ${stats.MoneySaved} saved, {stats.CigarettesNotSmoked} cigarettes avoided, {stats.LifeRegainedFormatted} of life regained! 👑";
+        }
+    }
+
+    private string GenerateSpecialMessage(ProgressStats stats)
+    {
+        if (stats.DaysSmokeFree == 7)
+            return "🎉 MILESTONE: ONE WEEK! Your taste and smell are improving!";
+        if (stats.DaysSmokeFree == 14)
+            return "🎉 MILESTONE: TWO WEEKS! Your circulation is significantly better!";
+        if (stats.DaysSmokeFree == 21)
+            return "🎉 MILESTONE: THREE WEEKS! A new habit is forming - a smoke-free you!";
+        if (stats.DaysSmokeFree == 30)
+            return "🎉 MILESTONE: ONE MONTH! Your lung function is increasing!";
+        if (stats.DaysSmokeFree == 90)
+            return "🎉 MILESTONE: THREE MONTHS! Your risk of heart attack has decreased significantly!";
+        if (stats.DaysSmokeFree == 180)
+            return "🎉 MILESTONE: SIX MONTHS! Your energy levels have dramatically increased!";
+        if (stats.DaysSmokeFree == 365)
+            return "🎉 MILESTONE: ONE YEAR! Your risk of heart disease is now HALF that of a smoker!";
+        
+        return string.Empty;
+    }
+}

@@ -416,3 +416,95 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+# =========================
+# macOS
+# =========================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# =========================
+# JetBrains Rider
+# =========================
+.idea/
+*.sln.iml
+**/.idea/**/workspace.xml
+**/.idea/**/tasks.xml
+**/.idea/**/usage.statistics.xml
+**/.idea/**/dictionaries
+**/.idea/**/shelf
+**/.idea/**/contentModel.xml
+**/.idea/**/dataSources/
+**/.idea/**/dataSources.ids
+**/.idea/**/dataSources.local.xml
+**/.idea/**/sqlDataSources.xml
+**/.idea/**/dynamic.xml
+**/.idea/**/uiDesigner.xml
+**/.idea/**/dbnavigator.xml
+**/.idea/httpRequests/
+**/.idea/**/markdown-hierarchical-nav.xml
+**/.idea/**/caches/
+**/.idea/**/gradle.xml
+**/.idea/**/libraries
+cmake-build-*/
+*.iws
+
+# =========================
+# Angular
+# =========================
+# Compiled output
+dist/
+tmp/
+out-tsc/
+bazel-out/
+
+# Node
+node_modules/
+
+# IDEs and editors
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode (already covered above)
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System files (already covered above)
+
+# e2e
+/e2e/*.js
+/e2e/*.map
+
+# Angular cache
+.angular/
+
+# Environment files
+*.local
+
+# Testing
+/coverage/
+/.nyc_output
