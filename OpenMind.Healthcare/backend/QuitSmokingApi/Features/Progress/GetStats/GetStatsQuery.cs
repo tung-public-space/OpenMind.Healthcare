@@ -1,6 +1,6 @@
 using MediatR;
-using QuitSmokingApi.Features.Progress.Domain;
+using QuitSmokingApi.Domain.Aggregates;
 
 namespace QuitSmokingApi.Features.Progress.GetStats;
 
-public record GetStatsQuery : IRequest<ProgressStats>;
+public record GetStatsQuery : IRequest<ProgressStatistics>;

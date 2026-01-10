@@ -1,5 +1,5 @@
 using MediatR;
-using QuitSmokingApi.Features.Progress.Domain;
+using QuitSmokingApi.Domain.Aggregates;
 
 namespace QuitSmokingApi.Features.Progress.CreateOrUpdateProgress;
 
@@ -8,4 +8,4 @@ public record CreateOrUpdateProgressCommand(
     int CigarettesPerDay,
     decimal PricePerPack,
     int CigarettesPerPack
-) : IRequest<UserProgress>;
+) : IRequest<QuitJourney>;

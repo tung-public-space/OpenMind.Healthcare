@@ -1,10 +1,12 @@
 using MediatR;
-using QuitSmokingApi.Features.Achievements.Domain;
 using QuitSmokingApi.Infrastructure.Data;
 
 namespace QuitSmokingApi.Features.Achievements.GetAllAchievements;
 
-public class GetAllAchievementsHandler : IRequestHandler<GetAllAchievementsQuery, List<Achievement>>
+/// <summary>
+/// Handler that uses domain model for achievement calculations
+/// </summary>
+public class GetAllAchievementsHandler : IRequestHandler<GetAllAchievementsQuery, List<AchievementDto>>
 {
     private readonly AppDbContext _context;
 
@@ -13,24 +15,26 @@ public class GetAllAchievementsHandler : IRequestHandler<GetAllAchievementsQuery
         _context = context;
     }
 
-    public Task<List<Achievement>> Handle(GetAllAchievementsQuery request, CancellationToken cancellationToken)
+    public Task<List<AchievementDto>> Handle(GetAllAchievementsQuery request, CancellationToken cancellationToken)
     {
         var achievements = _context.Achievements.OrderBy(a => a.RequiredDays).ToList();
-        var progress = _context.UserProgress.FirstOrDefault();
+        var journey = _context.QuitJourneys.FirstOrDefault();
+        var daysSinceQuit = journey?.GetDaysSmokeFree() ?? 0;
 
-        if (progress != null)
-        {
-            var daysSinceQuit = (int)(DateTime.UtcNow - progress.QuitDate).TotalDays;
-            foreach (var achievement in achievements)
-            {
-                achievement.IsUnlocked = daysSinceQuit >= achievement.RequiredDays;
-                if (achievement.IsUnlocked)
-                {
-                    achievement.UnlockedAt = progress.QuitDate.AddDays(achievement.RequiredDays);
-                }
-            }
-        }
+        var dtos = achievements.Select(a => new AchievementDto(
+            Id: a.Id,
+            Name: a.Name,
+            Description: a.Description,
+            Icon: a.Icon,
+            RequiredDays: a.RequiredDays,
+            Category: a.Category.ToString(),
+            IsUnlocked: a.IsUnlockedFor(daysSinceQuit),
+            UnlockedAt: a.IsUnlockedFor(daysSinceQuit) && journey != null 
+                ? journey.QuitDate.AddDays(a.RequiredDays) 
+                : null,
+            ProgressPercentage: Math.Round(a.GetProgress(daysSinceQuit), 2)
+        )).ToList();
 
-        return Task.FromResult(achievements);
+        return Task.FromResult(dtos);
     }
 }

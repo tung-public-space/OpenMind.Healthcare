@@ -1,10 +1,10 @@
 using MediatR;
-using QuitSmokingApi.Features.Progress.Domain;
+using QuitSmokingApi.Domain.Aggregates;
 using QuitSmokingApi.Infrastructure.Data;
 
 namespace QuitSmokingApi.Features.Progress.CreateOrUpdateProgress;
 
-public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgressCommand, UserProgress>
+public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgressCommand, QuitJourney>
 {
     private readonly AppDbContext _context;
 
@@ -13,33 +13,31 @@ public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgr
         _context = context;
     }
 
-    public Task<UserProgress> Handle(CreateOrUpdateProgressCommand request, CancellationToken cancellationToken)
+    public Task<QuitJourney> Handle(CreateOrUpdateProgressCommand request, CancellationToken cancellationToken)
     {
-        var existing = _context.UserProgress.FirstOrDefault();
+        var existing = _context.QuitJourneys.FirstOrDefault();
         
         if (existing != null)
         {
-            existing.QuitDate = request.QuitDate;
-            existing.CigarettesPerDay = request.CigarettesPerDay;
-            existing.PricePerPack = request.PricePerPack;
-            existing.CigarettesPerPack = request.CigarettesPerPack;
-            existing.UpdatedAt = DateTime.UtcNow;
+            // Use domain method to update
+            existing.Update(
+                request.QuitDate, 
+                request.CigarettesPerDay, 
+                request.CigarettesPerPack, 
+                request.PricePerPack);
             _context.SaveChanges();
             return Task.FromResult(existing);
         }
 
-        var progress = new UserProgress
-        {
-            QuitDate = request.QuitDate,
-            CigarettesPerDay = request.CigarettesPerDay,
-            PricePerPack = request.PricePerPack,
-            CigarettesPerPack = request.CigarettesPerPack,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        // Use factory method to create new journey
+        var journey = QuitJourney.Start(
+            request.QuitDate,
+            request.CigarettesPerDay,
+            request.CigarettesPerPack,
+            request.PricePerPack);
         
-        _context.UserProgress.Add(progress);
+        _context.QuitJourneys.Add(journey);
         _context.SaveChanges();
-        return Task.FromResult(progress);
+        return Task.FromResult(journey);
     }
 }

@@ -1,10 +1,10 @@
 using MediatR;
-using QuitSmokingApi.Features.Progress.Domain;
+using QuitSmokingApi.Domain.Aggregates;
 using QuitSmokingApi.Infrastructure.Data;
 
 namespace QuitSmokingApi.Features.Progress.GetProgress;
 
-public class GetProgressHandler : IRequestHandler<GetProgressQuery, UserProgress?>
+public class GetProgressHandler : IRequestHandler<GetProgressQuery, QuitJourney?>
 {
     private readonly AppDbContext _context;
 
@@ -13,9 +13,9 @@ public class GetProgressHandler : IRequestHandler<GetProgressQuery, UserProgress
         _context = context;
     }
 
-    public Task<UserProgress?> Handle(GetProgressQuery request, CancellationToken cancellationToken)
+    public Task<QuitJourney?> Handle(GetProgressQuery request, CancellationToken cancellationToken)
     {
-        var progress = _context.UserProgress.FirstOrDefault();
-        return Task.FromResult(progress);
+        var journey = _context.QuitJourneys.FirstOrDefault();
+        return Task.FromResult(journey);
     }
 }

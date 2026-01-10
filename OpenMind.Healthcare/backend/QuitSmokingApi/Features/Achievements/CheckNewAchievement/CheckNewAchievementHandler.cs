@@ -1,10 +1,13 @@
 using MediatR;
-using QuitSmokingApi.Features.Achievements.Domain;
 using QuitSmokingApi.Infrastructure.Data;
 
 namespace QuitSmokingApi.Features.Achievements.CheckNewAchievement;
 
-public class CheckNewAchievementHandler : IRequestHandler<CheckNewAchievementQuery, Achievement?>
+/// <summary>
+/// Handler that uses domain model to check for new achievements
+/// The achievement unlock logic is in the domain entity
+/// </summary>
+public class CheckNewAchievementHandler : IRequestHandler<CheckNewAchievementQuery, AchievementDto?>
 {
     private readonly AppDbContext _context;
 
@@ -13,16 +16,30 @@ public class CheckNewAchievementHandler : IRequestHandler<CheckNewAchievementQue
         _context = context;
     }
 
-    public Task<Achievement?> Handle(CheckNewAchievementQuery request, CancellationToken cancellationToken)
+    public Task<AchievementDto?> Handle(CheckNewAchievementQuery request, CancellationToken cancellationToken)
     {
-        var progress = _context.UserProgress.FirstOrDefault();
-        if (progress == null) return Task.FromResult<Achievement?>(null);
+        var journey = _context.QuitJourneys.FirstOrDefault();
+        if (journey == null) return Task.FromResult<AchievementDto?>(null);
 
-        var daysSinceQuit = (int)(DateTime.UtcNow - progress.QuitDate).TotalDays;
+        var daysSinceQuit = journey.GetDaysSmokeFree();
+        
+        // Find achievement that is exactly unlocked today
         var achievement = _context.Achievements
-            .Where(a => a.RequiredDays == daysSinceQuit)
+            .Where(a => a.IsExactlyUnlockedFor(daysSinceQuit))
             .FirstOrDefault();
 
-        return Task.FromResult(achievement);
+        if (achievement == null) return Task.FromResult<AchievementDto?>(null);
+        
+        return Task.FromResult<AchievementDto?>(new AchievementDto(
+            Id: achievement.Id,
+            Name: achievement.Name,
+            Description: achievement.Description,
+            Icon: achievement.Icon,
+            RequiredDays: achievement.RequiredDays,
+            Category: achievement.Category.ToString(),
+            IsUnlocked: true,
+            UnlockedAt: journey.QuitDate.AddDays(achievement.RequiredDays),
+            ProgressPercentage: 100
+        ));
     }
 }

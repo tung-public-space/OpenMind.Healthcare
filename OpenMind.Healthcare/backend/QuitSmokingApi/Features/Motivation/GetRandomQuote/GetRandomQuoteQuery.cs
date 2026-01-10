@@ -1,6 +1,5 @@
 using MediatR;
-using QuitSmokingApi.Features.Motivation.Domain;
 
 namespace QuitSmokingApi.Features.Motivation.GetRandomQuote;
 
-public record GetRandomQuoteQuery : IRequest<MotivationalQuote>;
+public record GetRandomQuoteQuery : IRequest<MotivationalQuoteDto>;
