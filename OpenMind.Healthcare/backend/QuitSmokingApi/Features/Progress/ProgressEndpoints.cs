@@ -12,7 +12,8 @@ public static class ProgressEndpoints
     public static void MapProgressEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/progress")
-            .WithTags("Progress");
+            .WithTags("Progress")
+            .RequireAuthorization();
 
         group.MapGet("/", GetProgress)
             .WithName("GetProgress")

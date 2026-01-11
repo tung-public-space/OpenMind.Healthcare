@@ -2,24 +2,19 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using QuitSmokingApi.Features.Achievements;
-using QuitSmokingApi.Features.Motivation;
-using QuitSmokingApi.Features.Progress;
-using QuitSmokingApi.Infrastructure.Data;
-using QuitSmokingApi.Services;
+using UserApi.Features.Auth;
+using UserApi.Infrastructure;
+using UserApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add MediatR for vertical slice architecture
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-
 // Add SQLite Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=quitSmoking.db";
-builder.Services.AddDbContext<AppDbContext>(options =>
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=users.db";
+builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlite(connectionString));
 
 // Add JWT Authentication
@@ -43,16 +38,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // Register services
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<IUserService>(provider => provider.GetRequiredService<UserService>());
+builder.Services.AddScoped<ITokenService, TokenService>();
 
-// Add CORS for Angular frontend
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost", "http://localhost:80", "http://localhost:3004")
+        policy.WithOrigins("http://localhost:4200", "http://localhost", "http://localhost:80")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -60,7 +53,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -71,17 +64,14 @@ app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map feature endpoints (vertical slices)
-app.MapProgressEndpoints();
-app.MapAchievementsEndpoints();
-app.MapMotivationEndpoints();
+// Map endpoints
+app.MapAuthEndpoints();
 
 // Initialize database
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
 }
 
 app.Run();

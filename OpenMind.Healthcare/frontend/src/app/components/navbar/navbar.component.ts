@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+import { User } from '../../models/models';
 
 @Component({
   selector: 'app-navbar',
@@ -13,6 +15,10 @@ import { Router } from '@angular/router';
         <li (click)="navigate('/dashboard')" [class.active]="isActive('/dashboard')">
           <span class="icon">📊</span>
           Dashboard
+        </li>
+        <li (click)="navigate('/calendar')" [class.active]="isActive('/calendar')">
+          <span class="icon">📅</span>
+          Calendar
         </li>
         <li (click)="navigate('/health')" [class.active]="isActive('/health')">
           <span class="icon">❤️</span>
@@ -31,6 +37,10 @@ import { Router } from '@angular/router';
           Craving Help
         </li>
       </ul>
+      <div class="user-menu">
+        <span class="username">{{ getDisplayName() }}</span>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
     </nav>
   `,
   styles: [`
@@ -108,6 +118,33 @@ import { Router } from '@angular/router';
       font-size: 18px;
     }
     
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .username {
+      font-weight: 500;
+      color: #10b981;
+    }
+    
+    .logout-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #ef4444;
+        color: white;
+      }
+    }
+    
     @media (max-width: 768px) {
       .navbar {
         flex-direction: column;
@@ -118,14 +155,51 @@ import { Router } from '@angular/router';
         flex-wrap: wrap;
         justify-content: center;
       }
+      
+      .user-menu {
+        order: -1;
+      }
     }
   `]
 })
-export class NavbarComponent {
-  constructor(private router: Router) {}
+export class NavbarComponent implements OnInit {
+  currentUser: User | null = null;
+
+  constructor(
+    private router: Router,
+    private apiService: ApiService
+  ) {}
+
+  ngOnInit(): void {
+    this.apiService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
 
   navigate(path: string): void {
     this.router.navigate([path]);
+  }
+
+  logout(): void {
+    this.apiService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  getDisplayName(): string {
+    if (!this.currentUser) return 'Guest';
+    
+    const firstName = this.currentUser.firstName || '';
+    const lastName = this.currentUser.lastName || '';
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    } else if (firstName) {
+      return firstName;
+    } else if (lastName) {
+      return lastName;
+    } else {
+      return this.currentUser.username || 'Guest';
+    }
   }
 
   isActive(path: string): boolean {

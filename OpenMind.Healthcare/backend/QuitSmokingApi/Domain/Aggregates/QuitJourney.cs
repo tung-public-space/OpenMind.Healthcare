@@ -13,14 +13,16 @@ public class QuitJourney : AggregateRoot
     // Constants for health calculations
     private const int MinutesOfLifePerCigarette = 11;
     
+    public Guid UserId { get; private set; }
     public DateTime QuitDate { get; private set; }
     public SmokingHabits SmokingHabits { get; private set; } = null!;
     
     // Private constructor for EF Core
     private QuitJourney() { }
     
-    private QuitJourney(DateTime quitDate, SmokingHabits smokingHabits)
+    private QuitJourney(Guid userId, DateTime quitDate, SmokingHabits smokingHabits)
     {
+        UserId = userId;
         QuitDate = quitDate;
         SmokingHabits = smokingHabits;
         
@@ -30,13 +32,13 @@ public class QuitJourney : AggregateRoot
     /// <summary>
     /// Factory method to start a new quit journey
     /// </summary>
-    public static QuitJourney Start(DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack)
+    public static QuitJourney Start(Guid userId, DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack)
     {
         if (quitDate > DateTime.UtcNow)
             throw new DomainException("Quit date cannot be in the future");
             
         var habits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack);
-        return new QuitJourney(quitDate, habits);
+        return new QuitJourney(userId, quitDate, habits);
     }
     
     /// <summary>

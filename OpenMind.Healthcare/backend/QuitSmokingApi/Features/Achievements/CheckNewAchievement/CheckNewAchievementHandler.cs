@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Services;
 
 namespace QuitSmokingApi.Features.Achievements.CheckNewAchievement;
 
@@ -10,27 +12,31 @@ namespace QuitSmokingApi.Features.Achievements.CheckNewAchievement;
 public class CheckNewAchievementHandler : IRequestHandler<CheckNewAchievementQuery, AchievementDto?>
 {
     private readonly AppDbContext _context;
+    private readonly UserService _userService;
 
-    public CheckNewAchievementHandler(AppDbContext context)
+    public CheckNewAchievementHandler(AppDbContext context, UserService userService)
     {
         _context = context;
+        _userService = userService;
     }
 
-    public Task<AchievementDto?> Handle(CheckNewAchievementQuery request, CancellationToken cancellationToken)
+    public async Task<AchievementDto?> Handle(CheckNewAchievementQuery request, CancellationToken cancellationToken)
     {
-        var journey = _context.QuitJourneys.FirstOrDefault();
-        if (journey == null) return Task.FromResult<AchievementDto?>(null);
+        var userId = _userService.GetCurrentUserId();
+        
+        var journey = await _context.QuitJourneys.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+        if (journey == null) return null;
 
         var daysSinceQuit = journey.GetDaysSmokeFree();
         
         // Find achievement that is exactly unlocked today
-        var achievement = _context.Achievements
+        var achievement = await _context.Achievements
             .Where(a => a.IsExactlyUnlockedFor(daysSinceQuit))
-            .FirstOrDefault();
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (achievement == null) return Task.FromResult<AchievementDto?>(null);
+        if (achievement == null) return null;
         
-        return Task.FromResult<AchievementDto?>(new AchievementDto(
+        return new AchievementDto(
             Id: achievement.Id,
             Name: achievement.Name,
             Description: achievement.Description,
@@ -40,6 +46,6 @@ public class CheckNewAchievementHandler : IRequestHandler<CheckNewAchievementQue
             IsUnlocked: true,
             UnlockedAt: journey.QuitDate.AddDays(achievement.RequiredDays),
             ProgressPercentage: 100
-        ));
+        );
     }
 }

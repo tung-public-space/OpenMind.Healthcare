@@ -10,7 +10,8 @@ public static class AchievementsEndpoints
     public static void MapAchievementsEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/achievements")
-            .WithTags("Achievements");
+            .WithTags("Achievements")
+            .RequireAuthorization();
 
         group.MapGet("/", GetAllAchievements)
             .WithName("GetAllAchievements")

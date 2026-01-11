@@ -1,7 +1,9 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using QuitSmokingApi.Domain.Aggregates;
 using QuitSmokingApi.Domain.ValueObjects;
 using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Services;
 using DomainHealthMilestone = QuitSmokingApi.Domain.Aggregates.HealthMilestone;
 
 namespace QuitSmokingApi.Features.Progress.GetHealthMilestones;
@@ -13,15 +15,19 @@ namespace QuitSmokingApi.Features.Progress.GetHealthMilestones;
 public class GetHealthMilestonesHandler : IRequestHandler<GetHealthMilestonesQuery, List<HealthMilestoneDto>>
 {
     private readonly AppDbContext _context;
+    private readonly UserService _userService;
 
-    public GetHealthMilestonesHandler(AppDbContext context)
+    public GetHealthMilestonesHandler(AppDbContext context, UserService userService)
     {
         _context = context;
+        _userService = userService;
     }
 
-    public Task<List<HealthMilestoneDto>> Handle(GetHealthMilestonesQuery request, CancellationToken cancellationToken)
+    public async Task<List<HealthMilestoneDto>> Handle(GetHealthMilestonesQuery request, CancellationToken cancellationToken)
     {
-        var journey = _context.QuitJourneys.FirstOrDefault();
+        var userId = _userService.GetCurrentUserId();
+        
+        var journey = await _context.QuitJourneys.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
         var timeSinceQuit = journey?.GetTimeSinceQuit() ?? Duration.Zero;
 
         // Map domain health milestones to DTOs with progress calculated
@@ -39,7 +45,7 @@ public class GetHealthMilestonesHandler : IRequestHandler<GetHealthMilestonesQue
             ))
             .ToList();
 
-        return Task.FromResult(milestones);
+        return milestones;
     }
     
     private static Guid GenerateDeterministicGuid(string input)

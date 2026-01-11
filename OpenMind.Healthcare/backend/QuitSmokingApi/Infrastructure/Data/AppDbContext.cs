@@ -24,6 +24,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<QuitJourney>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).IsRequired();
+            entity.HasIndex(e => e.UserId).IsUnique();
             entity.Property(e => e.QuitDate).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();

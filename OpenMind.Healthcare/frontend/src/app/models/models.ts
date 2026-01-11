@@ -66,3 +66,36 @@ export interface DailyEncouragement {
   tips: CravingTip[];
   specialMessage: string;
 }
+
+// Authentication Models
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface AuthResponse {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  token: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  createdAt: string;
+  lastLoginAt: string;
+}

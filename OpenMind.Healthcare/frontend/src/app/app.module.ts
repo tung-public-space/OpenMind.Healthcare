@@ -14,15 +14,22 @@ import { MotivationComponent } from './components/motivation/motivation.componen
 import { CravingHelpComponent } from './components/craving-help/craving-help.component';
 import { StatsCardComponent } from './components/stats-card/stats-card.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { ProgressCalendarComponent } from './components/progress-calendar/progress-calendar.component';
+import { LoginComponent } from './components/auth/login/login.component';
+import { RegisterComponent } from './components/auth/register/register.component';
+import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'setup', component: SetupComponent },
-  { path: 'achievements', component: AchievementsComponent },
-  { path: 'health', component: HealthMilestonesComponent },
-  { path: 'motivation', component: MotivationComponent },
-  { path: 'craving-help', component: CravingHelpComponent }
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'setup', component: SetupComponent, canActivate: [AuthGuard] },
+  { path: 'achievements', component: AchievementsComponent, canActivate: [AuthGuard] },
+  { path: 'health', component: HealthMilestonesComponent, canActivate: [AuthGuard] },
+  { path: 'motivation', component: MotivationComponent, canActivate: [AuthGuard] },
+  { path: 'craving-help', component: CravingHelpComponent, canActivate: [AuthGuard] },
+  { path: 'calendar', component: ProgressCalendarComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({
@@ -35,7 +42,10 @@ const routes: Routes = [
     MotivationComponent,
     CravingHelpComponent,
     StatsCardComponent,
-    NavbarComponent
+    NavbarComponent,
+    ProgressCalendarComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

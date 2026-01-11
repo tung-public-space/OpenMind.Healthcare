@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{1452
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuitSmokingApi", "OpenMind.Healthcare/backend/QuitSmokingApi/QuitSmokingApi.csproj", "{009A28CC-E558-B2B8-5DBB-113C3F95EA7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserApi", "OpenMind.Healthcare/backend/UserApi/UserApi.csproj", "{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,10 @@ Global
 		{009A28CC-E558-B2B8-5DBB-113C3F95EA7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{009A28CC-E558-B2B8-5DBB-113C3F95EA7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{009A28CC-E558-B2B8-5DBB-113C3F95EA7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -25,6 +31,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{14529156-82DD-8C74-E9C5-EADD899C67ED} = {36062E6B-F736-B199-6197-81EBF7082327}
 		{009A28CC-E558-B2B8-5DBB-113C3F95EA7C} = {14529156-82DD-8C74-E9C5-EADD899C67ED}
+		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B} = {14529156-82DD-8C74-E9C5-EADD899C67ED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5CAA2066-C225-4104-B255-9EABB70B8842}

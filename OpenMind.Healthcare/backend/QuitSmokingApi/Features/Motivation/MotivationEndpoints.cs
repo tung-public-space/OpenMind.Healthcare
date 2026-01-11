@@ -10,7 +10,8 @@ public static class MotivationEndpoints
     public static void MapMotivationEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/motivation")
-            .WithTags("Motivation");
+            .WithTags("Motivation")
+            .RequireAuthorization();
 
         group.MapGet("/quote", GetRandomQuote)
             .WithName("GetRandomQuote")
