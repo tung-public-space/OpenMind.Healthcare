@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuitSmokingApi", "OpenMind.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserApi", "OpenMind.Healthcare/backend/UserApi/UserApi.csproj", "{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{85BD27D8-F5AD-4EBB-B3BD-E420005A5442}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.BuildingBlocks", "OpenMind.Healthcare\backend\Shared\DDD.BuildingBlocks\DDD.BuildingBlocks.csproj", "{E4C4139F-24B0-4E15-8835-F3697BCE0FA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +28,10 @@ Global
 		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4C4139F-24B0-4E15-8835-F3697BCE0FA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4C4139F-24B0-4E15-8835-F3697BCE0FA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4C4139F-24B0-4E15-8835-F3697BCE0FA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4C4139F-24B0-4E15-8835-F3697BCE0FA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +40,8 @@ Global
 		{14529156-82DD-8C74-E9C5-EADD899C67ED} = {36062E6B-F736-B199-6197-81EBF7082327}
 		{009A28CC-E558-B2B8-5DBB-113C3F95EA7C} = {14529156-82DD-8C74-E9C5-EADD899C67ED}
 		{B1E2A3F4-C5D6-7E8F-9A0B-1C2D3E4F5A6B} = {14529156-82DD-8C74-E9C5-EADD899C67ED}
+		{85BD27D8-F5AD-4EBB-B3BD-E420005A5442} = {14529156-82DD-8C74-E9C5-EADD899C67ED}
+		{E4C4139F-24B0-4E15-8835-F3697BCE0FA0} = {85BD27D8-F5AD-4EBB-B3BD-E420005A5442}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5CAA2066-C225-4104-B255-9EABB70B8842}

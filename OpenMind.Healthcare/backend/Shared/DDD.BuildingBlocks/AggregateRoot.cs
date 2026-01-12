@@ -1,4 +1,4 @@
-namespace QuitSmokingApi.Domain.Common;
+namespace DDD.BuildingBlocks;
 
 /// <summary>
 /// Base class for aggregate roots - entities that are the entry point for a cluster of domain objects

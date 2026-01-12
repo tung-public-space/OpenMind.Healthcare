@@ -50,7 +50,6 @@ export class ApiService {
           const user: User = {
             id: response.id,
             email: response.email,
-            username: response.username,
             firstName: response.firstName,
             lastName: response.lastName,
             createdAt: '',
@@ -72,7 +71,6 @@ export class ApiService {
           const user: User = {
             id: response.id,
             email: response.email,
-            username: response.username,
             firstName: response.firstName,
             lastName: response.lastName,
             createdAt: '',

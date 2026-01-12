@@ -1,20 +1,13 @@
-using QuitSmokingApi.Domain.Common;
+using DDD.BuildingBlocks;
 
 namespace QuitSmokingApi.Domain.Events;
 
 /// <summary>
 /// Domain event raised when a new quit journey is started
 /// </summary>
-public class JourneyStartedEvent : IDomainEvent
+public class JourneyStartedEvent(Guid journeyId, DateTime quitDate) : IDomainEvent
 {
-    public Guid JourneyId { get; }
-    public DateTime QuitDate { get; }
-    public DateTime OccurredOn { get; }
-    
-    public JourneyStartedEvent(Guid journeyId, DateTime quitDate)
-    {
-        JourneyId = journeyId;
-        QuitDate = quitDate;
-        OccurredOn = DateTime.UtcNow;
-    }
+    public Guid JourneyId { get; } = journeyId;
+    public DateTime QuitDate { get; } = quitDate;
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
 }

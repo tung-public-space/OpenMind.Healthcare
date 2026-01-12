@@ -1,4 +1,4 @@
-using QuitSmokingApi.Domain.Common;
+using DDD.BuildingBlocks;
 
 namespace QuitSmokingApi.Domain.Aggregates;
 

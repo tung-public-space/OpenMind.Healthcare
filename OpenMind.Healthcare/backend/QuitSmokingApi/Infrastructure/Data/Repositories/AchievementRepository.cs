@@ -7,23 +7,16 @@ namespace QuitSmokingApi.Infrastructure.Data.Repositories;
 /// <summary>
 /// Repository implementation for the Achievement aggregate root.
 /// </summary>
-public class AchievementRepository : IAchievementRepository
+public class AchievementRepository(AppDbContext context) : IAchievementRepository
 {
-    private readonly AppDbContext _context;
-
-    public AchievementRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IReadOnlyList<Achievement>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Achievements.ToListAsync(cancellationToken);
+        return await context.Achievements.ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Achievement>> GetAllOrderedByRequiredDaysAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Achievements
+        return await context.Achievements
             .OrderBy(a => a.RequiredDays)
             .ToListAsync(cancellationToken);
     }

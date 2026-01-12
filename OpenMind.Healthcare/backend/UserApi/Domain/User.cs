@@ -1,57 +1,75 @@
+using DDD.BuildingBlocks;
+using UserApi.Domain.Events;
+
 namespace UserApi.Domain;
 
-public class User
+public class User : AggregateRoot
 {
-    public Guid Id { get; private set; }
     public string Email { get; private set; } = string.Empty;
-    public string Username { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
-    public DateTime CreatedAt { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
     public bool IsActive { get; private set; }
 
     private User() { }
 
-    public static User Create(string email, string username, string passwordHash, string firstName, string lastName)
+    private User(string email, string passwordHash, string firstName, string lastName)
     {
-        return new User
-        {
-            Id = Guid.NewGuid(),
-            Email = email.ToLowerInvariant(),
-            Username = username,
-            PasswordHash = passwordHash,
-            FirstName = firstName,
-            LastName = lastName,
-            CreatedAt = DateTime.UtcNow,
-            IsActive = true
-        };
+        Email = email.ToLowerInvariant();
+        PasswordHash = passwordHash;
+        FirstName = firstName;
+        LastName = lastName;
+        IsActive = true;
+    }
+
+    public static User Create(string email, string passwordHash, string firstName, string lastName)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new DomainException("Email is required");
+            
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new DomainException("Password hash is required");
+
+        var user = new User(email, passwordHash, firstName, lastName);
+        user.AddDomainEvent(new UserRegisteredEvent(user.Id, user.Email));
+        return user;
     }
 
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;
+        SetUpdated();
+        AddDomainEvent(new UserLoggedInEvent(Id, LastLoginAt.Value));
     }
 
     public void UpdateProfile(string firstName, string lastName)
     {
         FirstName = firstName;
         LastName = lastName;
+        SetUpdated();
+        AddDomainEvent(new ProfileUpdatedEvent(Id, firstName, lastName));
     }
 
     public void ChangePassword(string newPasswordHash)
     {
+        if (string.IsNullOrWhiteSpace(newPasswordHash))
+            throw new DomainException("Password hash is required");
+            
         PasswordHash = newPasswordHash;
+        SetUpdated();
+        AddDomainEvent(new PasswordChangedEvent(Id));
     }
 
     public void Deactivate()
     {
         IsActive = false;
+        SetUpdated();
     }
 
     public void Activate()
     {
         IsActive = true;
+        SetUpdated();
     }
 }

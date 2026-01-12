@@ -2,14 +2,8 @@ using QuitSmokingApi.Domain.ValueObjects;
 
 namespace QuitSmokingApi.Domain.Services;
 
-/// <summary>
-/// Domain service for generating encouragement messages based on progress
-/// </summary>
 public class EncouragementService
 {
-    /// <summary>
-    /// Generate a personalized encouragement message based on journey statistics
-    /// </summary>
     public string GenerateEncouragementMessage(ProgressStatistics stats)
     {
         return stats.DaysSmokeFree switch
@@ -24,9 +18,6 @@ public class EncouragementService
         };
     }
     
-    /// <summary>
-    /// Generate a special milestone message if applicable
-    /// </summary>
     public string? GenerateSpecialMilestoneMessage(int daysSmokeFree)
     {
         return daysSmokeFree switch
@@ -42,9 +33,6 @@ public class EncouragementService
         };
     }
     
-    /// <summary>
-    /// Generate a craving-specific encouragement
-    /// </summary>
     public string GenerateCravingEncouragement(int daysSmokeFree)
     {
         if (daysSmokeFree < 3)

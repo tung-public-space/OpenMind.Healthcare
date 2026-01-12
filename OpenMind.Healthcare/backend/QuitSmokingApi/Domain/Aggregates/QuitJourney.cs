@@ -1,4 +1,4 @@
-using QuitSmokingApi.Domain.Common;
+using DDD.BuildingBlocks;
 using QuitSmokingApi.Domain.Events;
 using QuitSmokingApi.Domain.ValueObjects;
 

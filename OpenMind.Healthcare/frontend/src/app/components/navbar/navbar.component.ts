@@ -198,7 +198,7 @@ export class NavbarComponent implements OnInit {
     } else if (lastName) {
       return lastName;
     } else {
-      return this.currentUser.username || 'Guest';
+      return this.currentUser.email || 'Guest';
     }
   }
 

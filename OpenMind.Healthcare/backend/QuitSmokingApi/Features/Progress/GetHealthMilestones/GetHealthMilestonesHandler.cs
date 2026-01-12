@@ -1,56 +1,40 @@
 using MediatR;
 using QuitSmokingApi.Domain.Repositories;
-using QuitSmokingApi.Domain.ValueObjects;
+using QuitSmokingApi.Domain.Services;
 using QuitSmokingApi.Services;
-using DomainHealthMilestone = QuitSmokingApi.Domain.ValueObjects.HealthMilestone;
 
 namespace QuitSmokingApi.Features.Progress.GetHealthMilestones;
 
-/// <summary>
-/// Handler that leverages the rich domain model for health milestones.
-/// Uses repository for data access following DDD principles.
-/// </summary>
-public class GetHealthMilestonesHandler : IRequestHandler<GetHealthMilestonesQuery, List<HealthMilestoneDto>>
+public record GetHealthMilestonesQuery : IRequest<List<HealthMilestoneDto>>;
+
+public class GetHealthMilestonesHandler(
+    IHealthMilestoneRepository healthMilestoneRepository,
+    IQuitJourneyRepository journeyRepository,
+    HealthMilestoneStatusService milestoneStatusService,
+    UserService userService) : IRequestHandler<GetHealthMilestonesQuery, List<HealthMilestoneDto>>
 {
-    private readonly IQuitJourneyRepository _journeyRepository;
-    private readonly UserService _userService;
-
-    public GetHealthMilestonesHandler(IQuitJourneyRepository journeyRepository, UserService userService)
-    {
-        _journeyRepository = journeyRepository;
-        _userService = userService;
-    }
-
     public async Task<List<HealthMilestoneDto>> Handle(GetHealthMilestonesQuery request, CancellationToken cancellationToken)
     {
-        var userId = _userService.GetCurrentUserId()
+        var userId = userService.GetCurrentUserId()
             ?? throw new UnauthorizedAccessException("User not authenticated");
         
-        var journey = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
-        var timeSinceQuit = journey?.GetTimeSinceQuit() ?? Duration.Zero;
+        var milestones = await healthMilestoneRepository.GetAllOrderedByTimeRequiredAsync(cancellationToken);
+        var journey = await journeyRepository.GetByUserIdAsync(userId, cancellationToken);
 
-        // Map domain health milestones to DTOs with progress calculated
-        var milestones = DomainHealthMilestone.GetAll()
-            .Select((m, index) => new HealthMilestoneDto(
-                Id: GenerateDeterministicGuid(m.Title),
-                Title: m.Title,
-                Description: m.Description,
-                TimeInMinutes: m.TimeRequired.TotalMinutes,
-                TimeDisplay: m.TimeDisplay,
-                Icon: m.Icon,
-                Category: m.Category.ToString(),
-                IsAchieved: m.IsAchieved(timeSinceQuit),
-                ProgressPercentage: Math.Round(m.GetProgress(timeSinceQuit), 2)
+        var statuses = milestoneStatusService.ComputeStatuses(milestones, journey);
+        
+        return statuses
+            .Select(s => new HealthMilestoneDto(
+                Id: s.MilestoneId,
+                Title: s.Title,
+                Description: s.Description,
+                TimeInMinutes: s.TimeRequiredMinutes,
+                TimeDisplay: s.TimeDisplay,
+                Icon: s.Icon,
+                Category: s.Category,
+                IsAchieved: s.IsAchieved,
+                ProgressPercentage: s.ProgressPercentage
             ))
             .ToList();
-
-        return milestones;
-    }
-    
-    private static Guid GenerateDeterministicGuid(string input)
-    {
-        using var md5 = System.Security.Cryptography.MD5.Create();
-        var hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
-        return new Guid(hash);
     }
 }

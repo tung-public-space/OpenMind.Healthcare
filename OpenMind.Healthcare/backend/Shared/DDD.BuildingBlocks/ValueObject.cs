@@ -1,4 +1,4 @@
-namespace QuitSmokingApi.Domain.Common;
+namespace DDD.BuildingBlocks;
 
 /// <summary>
 /// Base class for value objects - immutable objects defined by their attributes

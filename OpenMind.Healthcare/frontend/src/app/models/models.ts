@@ -76,7 +76,6 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  username: string;
   firstName: string;
   lastName: string;
 }
@@ -84,7 +83,6 @@ export interface RegisterRequest {
 export interface AuthResponse {
   id: string;
   email: string;
-  username: string;
   firstName: string;
   lastName: string;
   token: string;
@@ -93,7 +91,6 @@ export interface AuthResponse {
 export interface User {
   id: string;
   email: string;
-  username: string;
   firstName: string;
   lastName: string;
   createdAt: string;

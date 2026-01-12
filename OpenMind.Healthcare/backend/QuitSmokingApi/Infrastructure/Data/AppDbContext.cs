@@ -1,19 +1,43 @@
+using DDD.BuildingBlocks;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QuitSmokingApi.Domain.Aggregates;
-using QuitSmokingApi.Domain.ValueObjects;
 
 namespace QuitSmokingApi.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options, IMediator mediator) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<QuitJourney> QuitJourneys { get; set; }
     public DbSet<Achievement> Achievements { get; set; }
+    public DbSet<HealthMilestone> HealthMilestones { get; set; }
     public DbSet<MotivationalQuote> MotivationalQuotes { get; set; }
     public DbSet<CravingTip> CravingTips { get; set; }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = ChangeTracker.Entries<Entity>()
+            .Where(e => e.Entity.DomainEvents.Count != 0)
+            .Select(e => e.Entity)
+            .ToList();
+
+        var domainEvents = entities
+            .SelectMany(e => e.DomainEvents)
+            .ToList();
+
+        foreach (var entity in entities)
+        {
+            entity.ClearDomainEvents();
+        }
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        return result;
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,7 +84,20 @@ public class AppDbContext : DbContext
             entity.Ignore(e => e.DomainEvents);
         });
         
-        // Configure MotivationalQuote aggregate root
+        modelBuilder.Entity<HealthMilestone>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.TimeRequiredMinutes).IsRequired();
+            entity.Property(e => e.TimeDisplay).HasMaxLength(50);
+            entity.Property(e => e.Icon).HasMaxLength(10);
+            entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+            entity.Ignore(e => e.DomainEvents);
+        });
+        
         modelBuilder.Entity<MotivationalQuote>(entity =>
         {
             entity.HasKey(e => e.Id);

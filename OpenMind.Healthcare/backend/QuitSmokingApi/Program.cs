@@ -52,12 +52,14 @@ builder.Services.AddScoped<IUserService>(provider => provider.GetRequiredService
 
 // Register repositories (each aggregate root has its own repository)
 builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
+builder.Services.AddScoped<IHealthMilestoneRepository, HealthMilestoneRepository>();
 builder.Services.AddScoped<IQuitJourneyRepository, QuitJourneyRepository>();
 builder.Services.AddScoped<IMotivationalQuoteRepository, MotivationalQuoteRepository>();
 builder.Services.AddScoped<ICravingTipRepository, CravingTipRepository>();
 
 // Register domain services
 builder.Services.AddScoped<AchievementStatusService>();
+builder.Services.AddScoped<HealthMilestoneStatusService>();
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>

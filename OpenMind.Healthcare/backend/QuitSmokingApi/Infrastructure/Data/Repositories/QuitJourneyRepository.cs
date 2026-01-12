@@ -7,30 +7,23 @@ namespace QuitSmokingApi.Infrastructure.Data.Repositories;
 /// <summary>
 /// Repository implementation for the QuitJourney aggregate root.
 /// </summary>
-public class QuitJourneyRepository : IQuitJourneyRepository
+public class QuitJourneyRepository(AppDbContext context) : IQuitJourneyRepository
 {
-    private readonly AppDbContext _context;
-
-    public QuitJourneyRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<QuitJourney?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _context.QuitJourneys
+        return await context.QuitJourneys
             .FirstOrDefaultAsync(j => j.UserId == userId, cancellationToken);
     }
 
     public async Task AddAsync(QuitJourney journey, CancellationToken cancellationToken = default)
     {
-        await _context.QuitJourneys.AddAsync(journey, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.QuitJourneys.AddAsync(journey, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(QuitJourney journey, CancellationToken cancellationToken = default)
     {
-        _context.QuitJourneys.Update(journey);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.QuitJourneys.Update(journey);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

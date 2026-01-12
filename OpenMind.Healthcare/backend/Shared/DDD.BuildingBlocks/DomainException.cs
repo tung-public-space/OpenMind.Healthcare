@@ -1,4 +1,4 @@
-namespace QuitSmokingApi.Domain.Common;
+namespace DDD.BuildingBlocks;
 
 /// <summary>
 /// Exception thrown when domain rules are violated

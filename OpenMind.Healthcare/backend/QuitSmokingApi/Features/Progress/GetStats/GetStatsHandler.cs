@@ -5,31 +5,21 @@ using QuitSmokingApi.Services;
 
 namespace QuitSmokingApi.Features.Progress.GetStats;
 
-/// <summary>
-/// Handler that leverages the rich domain model to calculate statistics.
-/// Uses repository for data access following DDD principles.
-/// </summary>
-public class GetStatsHandler : IRequestHandler<GetStatsQuery, ProgressStatistics>
+public record GetStatsQuery : IRequest<ProgressStatistics>;
+
+public class GetStatsHandler(
+    IQuitJourneyRepository journeyRepository,
+    UserService userService) : IRequestHandler<GetStatsQuery, ProgressStatistics>
 {
-    private readonly IQuitJourneyRepository _journeyRepository;
-    private readonly UserService _userService;
-
-    public GetStatsHandler(IQuitJourneyRepository journeyRepository, UserService userService)
-    {
-        _journeyRepository = journeyRepository;
-        _userService = userService;
-    }
-
     public async Task<ProgressStatistics> Handle(GetStatsQuery request, CancellationToken cancellationToken)
     {
-        var userId = _userService.GetCurrentUserId()
+        var userId = userService.GetCurrentUserId()
             ?? throw new UnauthorizedAccessException("User not authenticated");
         
-        var journey = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
+        var journey = await journeyRepository.GetByUserIdAsync(userId, cancellationToken);
         
         if (journey == null)
         {
-            // Return empty statistics using domain defaults
             return new ProgressStatistics(
                 daysSmokeFree: 0,
                 hoursSmokeFree: 0,
@@ -44,7 +34,6 @@ public class GetStatsHandler : IRequestHandler<GetStatsQuery, ProgressStatistics
             );
         }
 
-        // All business logic is now in the domain - just delegate to the aggregate
         var statistics = journey.GetStatistics();
         return statistics;
     }

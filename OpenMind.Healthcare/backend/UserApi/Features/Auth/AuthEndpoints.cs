@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using UserApi.Domain;
+using MediatR;
+using UserApi.Features.Auth.Commands;
 using UserApi.Features.Auth.DTOs;
-using UserApi.Infrastructure;
-using UserApi.Services;
+using UserApi.Features.Auth.Queries;
 
 namespace UserApi.Features.Auth;
 
@@ -36,173 +35,109 @@ public static class AuthEndpoints
             .WithOpenApi();
     }
 
-    private static async Task<IResult> Register(
-        RegisterRequest request,
-        UserDbContext db,
-        ITokenService tokenService)
+    private static async Task<IResult> Register(RegisterRequest request, IMediator mediator)
     {
-        // Validate request
-        if (string.IsNullOrWhiteSpace(request.Email) || 
-            string.IsNullOrWhiteSpace(request.Username) ||
-            string.IsNullOrWhiteSpace(request.Password))
+        try
         {
-            return Results.BadRequest(new { message = "Email, username, and password are required" });
-        }
+            var command = new RegisterUserCommand(
+                request.Email,
+                request.Password,
+                request.FirstName,
+                request.LastName
+            );
 
-        if (request.Password.Length < 6)
+            var result = await mediator.Send(command);
+            return Results.Created($"/api/auth/me", result);
+        }
+        catch (ArgumentException ex)
         {
-            return Results.BadRequest(new { message = "Password must be at least 6 characters" });
+            return Results.BadRequest(new { message = ex.Message });
         }
-
-        // Check if email already exists
-        var existingEmail = await db.Users.FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant());
-        if (existingEmail != null)
+        catch (InvalidOperationException ex)
         {
-            return Results.BadRequest(new { message = "Email already registered" });
+            return Results.BadRequest(new { message = ex.Message });
         }
-
-        // Check if username already exists
-        var existingUsername = await db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-        if (existingUsername != null)
-        {
-            return Results.BadRequest(new { message = "Username already taken" });
-        }
-
-        // Hash password and create user
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        var user = User.Create(
-            request.Email,
-            request.Username,
-            passwordHash,
-            request.FirstName ?? "",
-            request.LastName ?? ""
-        );
-
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-
-        // Generate token
-        var token = tokenService.GenerateToken(user);
-
-        return Results.Created($"/api/auth/me", new AuthResponse(
-            user.Id,
-            user.Email,
-            user.Username,
-            user.FirstName,
-            user.LastName,
-            token
-        ));
     }
 
-    private static async Task<IResult> Login(
-        LoginRequest request,
-        UserDbContext db,
-        ITokenService tokenService)
+    private static async Task<IResult> Login(LoginRequest request, IMediator mediator)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        try
         {
-            return Results.BadRequest(new { message = "Email and password are required" });
+            var command = new LoginUserCommand(request.Email, request.Password);
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         }
-
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant());
-        
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
         {
             return Results.Unauthorized();
         }
-
-        if (!user.IsActive)
+        catch (InvalidOperationException ex)
         {
-            return Results.BadRequest(new { message = "Account is deactivated" });
+            return Results.BadRequest(new { message = ex.Message });
         }
-
-        user.UpdateLastLogin();
-        await db.SaveChangesAsync();
-
-        var token = tokenService.GenerateToken(user);
-
-        return Results.Ok(new AuthResponse(
-            user.Id,
-            user.Email,
-            user.Username,
-            user.FirstName,
-            user.LastName,
-            token
-        ));
     }
 
-    private static async Task<IResult> GetCurrentUser(
-        HttpContext httpContext,
-        UserDbContext db)
+    private static async Task<IResult> GetCurrentUser(HttpContext httpContext, IMediator mediator)
     {
         var userId = GetUserId(httpContext);
         if (userId == null) return Results.Unauthorized();
 
-        var user = await db.Users.FindAsync(userId.Value);
-        if (user == null) return Results.NotFound();
+        var query = new GetCurrentUserQuery(userId.Value);
+        var result = await mediator.Send(query);
 
-        return Results.Ok(new UserDto(
-            user.Id,
-            user.Email,
-            user.Username,
-            user.FirstName,
-            user.LastName,
-            user.CreatedAt,
-            user.LastLoginAt
-        ));
+        return result == null ? Results.NotFound() : Results.Ok(result);
     }
 
     private static async Task<IResult> UpdateProfile(
         UpdateProfileRequest request,
         HttpContext httpContext,
-        UserDbContext db)
+        IMediator mediator)
     {
         var userId = GetUserId(httpContext);
         if (userId == null) return Results.Unauthorized();
 
-        var user = await db.Users.FindAsync(userId.Value);
-        if (user == null) return Results.NotFound();
-
-        user.UpdateProfile(request.FirstName ?? "", request.LastName ?? "");
-        await db.SaveChangesAsync();
-
-        return Results.Ok(new UserDto(
-            user.Id,
-            user.Email,
-            user.Username,
-            user.FirstName,
-            user.LastName,
-            user.CreatedAt,
-            user.LastLoginAt
-        ));
+        try
+        {
+            var command = new UpdateProfileCommand(userId.Value, request.FirstName, request.LastName);
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return Results.NotFound();
+        }
     }
 
     private static async Task<IResult> ChangePassword(
         ChangePasswordRequest request,
         HttpContext httpContext,
-        UserDbContext db)
+        IMediator mediator)
     {
         var userId = GetUserId(httpContext);
         if (userId == null) return Results.Unauthorized();
 
-        var user = await db.Users.FindAsync(userId.Value);
-        if (user == null) return Results.NotFound();
-
-        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+        try
         {
-            return Results.BadRequest(new { message = "Current password is incorrect" });
+            var command = new ChangePasswordCommand(userId.Value, request.CurrentPassword, request.NewPassword);
+            await mediator.Send(command);
+            return Results.Ok(new { message = "Password changed successfully" });
         }
-
-        if (request.NewPassword.Length < 6)
+        catch (KeyNotFoundException)
         {
-            return Results.BadRequest(new { message = "New password must be at least 6 characters" });
+            return Results.NotFound();
         }
-
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-        user.ChangePassword(newPasswordHash);
-        await db.SaveChangesAsync();
-
-        return Results.Ok(new { message = "Password changed successfully" });
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static Guid? GetUserId(HttpContext httpContext)

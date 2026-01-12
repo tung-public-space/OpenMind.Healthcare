@@ -2,22 +2,23 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using UserApi.Domain.Repositories;
 using UserApi.Features.Auth;
 using UserApi.Infrastructure;
+using UserApi.Infrastructure.Repositories;
 using UserApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add SQLite Database
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=users.db";
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// Add JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -37,10 +38,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Register services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -53,7 +53,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -64,10 +63,8 @@ app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map endpoints
 app.MapAuthEndpoints();
 
-// Initialize database
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();

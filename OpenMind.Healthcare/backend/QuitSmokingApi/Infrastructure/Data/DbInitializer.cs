@@ -12,6 +12,7 @@ public static class DbInitializer
         SeedMotivationalQuotes(context);
         SeedCravingTips(context);
         SeedAchievements(context);
+        SeedHealthMilestones(context);
 
         context.SaveChanges();
     }
@@ -77,5 +78,26 @@ public static class DbInitializer
             Achievement.Create("Year One Legend", "365 days smoke-free!", "🏰", 365, AchievementCategory.Milestone)
         };
         context.Achievements.AddRange(achievements);
+    }
+    
+    private static void SeedHealthMilestones(AppDbContext context)
+    {
+        var milestones = new[]
+        {
+            HealthMilestone.Create("Blood Pressure Normalizes", "Your blood pressure and pulse rate begin to return to normal.", 20, "20 minutes", "❤️", HealthCategory.Cardiovascular),
+            HealthMilestone.Create("Carbon Monoxide Levels Drop", "Carbon monoxide level in your blood drops to normal.", 480, "8 hours", "🫁", HealthCategory.Respiratory),
+            HealthMilestone.Create("Heart Attack Risk Decreases", "Your risk of heart attack begins to decrease.", 1440, "24 hours", "💗", HealthCategory.Cardiovascular),
+            HealthMilestone.Create("Nerve Endings Regenerate", "Nerve endings start to regenerate. Taste and smell improve.", 2880, "48 hours", "👃", HealthCategory.Sensory),
+            HealthMilestone.Create("Breathing Improves", "Bronchial tubes relax, making breathing easier. Lung capacity increases.", 4320, "72 hours", "🌬️", HealthCategory.Respiratory),
+            HealthMilestone.Create("Circulation Improves", "Blood circulation improves significantly. Walking becomes easier.", 20160, "2 weeks", "🩸", HealthCategory.Cardiovascular),
+            HealthMilestone.Create("Lung Function Increases", "Lung function increases up to 30%. Coughing and shortness of breath decrease.", 43200, "1 month", "💨", HealthCategory.Respiratory),
+            HealthMilestone.Create("Cilia Regenerate", "Cilia in lungs regenerate, improving ability to clean lungs and reduce infection.", 129600, "3 months", "🧹", HealthCategory.Respiratory),
+            HealthMilestone.Create("Energy Levels Increase", "Overall energy increases. Physical activity becomes much easier.", 259200, "6 months", "⚡", HealthCategory.Energy),
+            HealthMilestone.Create("Coronary Heart Disease Risk Halved", "Your risk of coronary heart disease is now half that of a smoker.", 525600, "1 year", "🫀", HealthCategory.Cardiovascular),
+            HealthMilestone.Create("Stroke Risk Reduced", "Your stroke risk is reduced to that of a non-smoker.", 2628000, "5 years", "🧠", HealthCategory.Cardiovascular),
+            HealthMilestone.Create("Lung Cancer Risk Halved", "Risk of lung cancer drops to half that of a smoker.", 5256000, "10 years", "🎗️", HealthCategory.CancerPrevention),
+            HealthMilestone.Create("Heart Disease Risk Normal", "Risk of coronary heart disease same as non-smoker.", 7884000, "15 years", "💖", HealthCategory.Cardiovascular)
+        };
+        context.HealthMilestones.AddRange(milestones);
     }
 }
