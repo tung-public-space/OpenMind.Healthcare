@@ -2,10 +2,13 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuitSmokingApi.Domain.Repositories;
+using QuitSmokingApi.Domain.Services;
 using QuitSmokingApi.Features.Achievements;
 using QuitSmokingApi.Features.Motivation;
 using QuitSmokingApi.Features.Progress;
 using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Infrastructure.Data.Repositories;
 using QuitSmokingApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +49,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IUserService>(provider => provider.GetRequiredService<UserService>());
+
+// Register repositories (each aggregate root has its own repository)
+builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
+builder.Services.AddScoped<IQuitJourneyRepository, QuitJourneyRepository>();
+builder.Services.AddScoped<IMotivationalQuoteRepository, MotivationalQuoteRepository>();
+builder.Services.AddScoped<ICravingTipRepository, CravingTipRepository>();
+
+// Register domain services
+builder.Services.AddScoped<AchievementStatusService>();
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>

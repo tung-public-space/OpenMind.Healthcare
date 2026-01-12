@@ -3,9 +3,9 @@ using QuitSmokingApi.Domain.Common;
 namespace QuitSmokingApi.Domain.Aggregates;
 
 /// <summary>
-/// Entity representing a craving tip
+/// Aggregate root representing a craving tip
 /// </summary>
-public class CravingTip : Entity
+public class CravingTip : AggregateRoot
 {
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;

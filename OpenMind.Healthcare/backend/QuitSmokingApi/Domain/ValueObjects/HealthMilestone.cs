@@ -1,10 +1,10 @@
 using QuitSmokingApi.Domain.Common;
-using QuitSmokingApi.Domain.ValueObjects;
 
-namespace QuitSmokingApi.Domain.Aggregates;
+namespace QuitSmokingApi.Domain.ValueObjects;
 
 /// <summary>
-/// Value object representing a health milestone and its benefits
+/// Value object representing a health milestone and its benefits.
+/// Value objects are immutable and identified by their values, not by an ID.
 /// </summary>
 public class HealthMilestone : ValueObject
 {
@@ -138,9 +138,6 @@ public class HealthMilestone : ValueObject
     };
     
     public static IReadOnlyList<HealthMilestone> GetAll() => AllMilestones;
-    
-    public static IEnumerable<HealthMilestone> GetByCategory(HealthCategory category)
-        => AllMilestones.Where(m => m.Category == category);
     
     public bool IsAchieved(Duration timeSinceQuit) => timeSinceQuit.IsGreaterThanOrEqual(TimeRequired);
     

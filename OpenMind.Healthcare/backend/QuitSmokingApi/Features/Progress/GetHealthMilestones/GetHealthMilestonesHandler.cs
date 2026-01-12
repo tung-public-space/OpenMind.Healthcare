@@ -1,33 +1,32 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using QuitSmokingApi.Domain.Aggregates;
+using QuitSmokingApi.Domain.Repositories;
 using QuitSmokingApi.Domain.ValueObjects;
-using QuitSmokingApi.Infrastructure.Data;
 using QuitSmokingApi.Services;
-using DomainHealthMilestone = QuitSmokingApi.Domain.Aggregates.HealthMilestone;
+using DomainHealthMilestone = QuitSmokingApi.Domain.ValueObjects.HealthMilestone;
 
 namespace QuitSmokingApi.Features.Progress.GetHealthMilestones;
 
 /// <summary>
-/// Handler that leverages the rich domain model for health milestones
-/// The milestone definitions and progress calculations are in the domain
+/// Handler that leverages the rich domain model for health milestones.
+/// Uses repository for data access following DDD principles.
 /// </summary>
 public class GetHealthMilestonesHandler : IRequestHandler<GetHealthMilestonesQuery, List<HealthMilestoneDto>>
 {
-    private readonly AppDbContext _context;
+    private readonly IQuitJourneyRepository _journeyRepository;
     private readonly UserService _userService;
 
-    public GetHealthMilestonesHandler(AppDbContext context, UserService userService)
+    public GetHealthMilestonesHandler(IQuitJourneyRepository journeyRepository, UserService userService)
     {
-        _context = context;
+        _journeyRepository = journeyRepository;
         _userService = userService;
     }
 
     public async Task<List<HealthMilestoneDto>> Handle(GetHealthMilestonesQuery request, CancellationToken cancellationToken)
     {
-        var userId = _userService.GetCurrentUserId();
+        var userId = _userService.GetCurrentUserId()
+            ?? throw new UnauthorizedAccessException("User not authenticated");
         
-        var journey = await _context.QuitJourneys.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+        var journey = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
         var timeSinceQuit = journey?.GetTimeSinceQuit() ?? Duration.Zero;
 
         // Map domain health milestones to DTOs with progress calculated

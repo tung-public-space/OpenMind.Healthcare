@@ -131,24 +131,6 @@ public class QuitJourney : AggregateRoot
     }
     
     /// <summary>
-    /// Check if a specific health milestone has been achieved
-    /// </summary>
-    public bool HasAchievedHealthMilestone(HealthMilestone milestone, DateTime? asOf = null)
-    {
-        var duration = GetTimeSinceQuit(asOf);
-        return duration.IsGreaterThanOrEqual(milestone.TimeRequired);
-    }
-    
-    /// <summary>
-    /// Calculate progress towards a specific health milestone
-    /// </summary>
-    public double GetHealthMilestoneProgress(HealthMilestone milestone, DateTime? asOf = null)
-    {
-        var duration = GetTimeSinceQuit(asOf);
-        return Math.Min(100, (double)duration.TotalMinutes / milestone.TimeRequired.TotalMinutes * 100);
-    }
-    
-    /// <summary>
     /// Generate complete progress statistics
     /// </summary>
     public ProgressStatistics GetStatistics(DateTime? asOf = null)

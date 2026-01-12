@@ -3,9 +3,9 @@ using QuitSmokingApi.Domain.Common;
 namespace QuitSmokingApi.Domain.Aggregates;
 
 /// <summary>
-/// Entity representing a motivational quote
+/// Aggregate root representing a motivational quote
 /// </summary>
-public class MotivationalQuote : Entity
+public class MotivationalQuote : AggregateRoot
 {
     public string Quote { get; private set; } = string.Empty;
     public string Author { get; private set; } = string.Empty;
@@ -28,8 +28,6 @@ public class MotivationalQuote : Entity
             
         return new MotivationalQuote(quote, author ?? "Unknown", category);
     }
-    
-    public string GetFormattedQuote() => $"\"{Quote}\" - {Author}";
 }
 
 public enum QuoteCategory

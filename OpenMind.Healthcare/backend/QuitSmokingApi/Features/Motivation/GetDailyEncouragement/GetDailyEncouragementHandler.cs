@@ -10,24 +10,16 @@ namespace QuitSmokingApi.Features.Motivation.GetDailyEncouragement;
 /// <summary>
 /// Handler that uses the domain EncouragementService for generating messages
 /// </summary>
-public class GetDailyEncouragementHandler : IRequestHandler<GetDailyEncouragementQuery, DailyEncouragementDto>
+public class GetDailyEncouragementHandler(IMediator mediator)
+    : IRequestHandler<GetDailyEncouragementQuery, DailyEncouragementDto>
 {
-    private readonly AppDbContext _context;
-    private readonly IMediator _mediator;
-    private readonly EncouragementService _encouragementService;
-
-    public GetDailyEncouragementHandler(AppDbContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-        _encouragementService = new EncouragementService();
-    }
+    private readonly EncouragementService _encouragementService = new();
 
     public async Task<DailyEncouragementDto> Handle(GetDailyEncouragementQuery request, CancellationToken cancellationToken)
     {
-        var stats = await _mediator.Send(new GetStatsQuery(), cancellationToken);
-        var quote = await _mediator.Send(new GetRandomQuoteQuery(), cancellationToken);
-        var allTips = await _mediator.Send(new GetCravingTipsQuery(), cancellationToken);
+        var stats = await mediator.Send(new GetStatsQuery(), cancellationToken);
+        var quote = await mediator.Send(new GetRandomQuoteQuery(), cancellationToken);
+        var allTips = await mediator.Send(new GetCravingTipsQuery(), cancellationToken);
         
         // Get 3 random tips
         var random = new Random();

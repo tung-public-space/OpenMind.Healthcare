@@ -1,20 +1,21 @@
 using MediatR;
-using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Domain.Repositories;
 
 namespace QuitSmokingApi.Features.Motivation.GetCravingTips;
 
 public class GetCravingTipsHandler : IRequestHandler<GetCravingTipsQuery, List<CravingTipDto>>
 {
-    private readonly AppDbContext _context;
+    private readonly ICravingTipRepository _cravingTipRepository;
 
-    public GetCravingTipsHandler(AppDbContext context)
+    public GetCravingTipsHandler(ICravingTipRepository cravingTipRepository)
     {
-        _context = context;
+        _cravingTipRepository = cravingTipRepository;
     }
 
-    public Task<List<CravingTipDto>> Handle(GetCravingTipsQuery request, CancellationToken cancellationToken)
+    public async Task<List<CravingTipDto>> Handle(GetCravingTipsQuery request, CancellationToken cancellationToken)
     {
-        var tips = _context.CravingTips.ToList()
+        var tips = await _cravingTipRepository.GetAllAsync(cancellationToken);
+        return tips
             .Select(t => new CravingTipDto(
                 t.Id,
                 t.Title,
@@ -23,6 +24,5 @@ public class GetCravingTipsHandler : IRequestHandler<GetCravingTipsQuery, List<C
                 t.Category.ToString()
             ))
             .ToList();
-        return Task.FromResult(tips);
     }
 }

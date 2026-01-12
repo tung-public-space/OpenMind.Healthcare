@@ -1,19 +1,22 @@
 using MediatR;
 using QuitSmokingApi.Domain.Aggregates;
-using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Domain.Repositories;
 using QuitSmokingApi.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace QuitSmokingApi.Features.Progress.CreateOrUpdateProgress;
 
+/// <summary>
+/// Handler for creating or updating a quit journey.
+/// Uses repository for data access following DDD principles.
+/// </summary>
 public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgressCommand, QuitJourney>
 {
-    private readonly AppDbContext _context;
+    private readonly IQuitJourneyRepository _journeyRepository;
     private readonly IUserService _userService;
 
-    public CreateOrUpdateProgressHandler(AppDbContext context, IUserService userService)
+    public CreateOrUpdateProgressHandler(IQuitJourneyRepository journeyRepository, IUserService userService)
     {
-        _context = context;
+        _journeyRepository = journeyRepository;
         _userService = userService;
     }
 
@@ -22,8 +25,7 @@ public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgr
         var userId = _userService.GetCurrentUserId() 
             ?? throw new UnauthorizedAccessException("User not authenticated");
 
-        var existing = await _context.QuitJourneys
-            .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+        var existing = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
         
         if (existing != null)
         {
@@ -33,7 +35,7 @@ public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgr
                 request.CigarettesPerDay, 
                 request.CigarettesPerPack, 
                 request.PricePerPack);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _journeyRepository.UpdateAsync(existing, cancellationToken);
             return existing;
         }
 
@@ -45,8 +47,7 @@ public class CreateOrUpdateProgressHandler : IRequestHandler<CreateOrUpdateProgr
             request.CigarettesPerPack,
             request.PricePerPack);
         
-        _context.QuitJourneys.Add(journey);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _journeyRepository.AddAsync(journey, cancellationToken);
         return journey;
     }
 }

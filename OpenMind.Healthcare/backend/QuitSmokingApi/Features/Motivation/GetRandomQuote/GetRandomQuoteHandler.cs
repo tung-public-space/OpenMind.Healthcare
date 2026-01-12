@@ -1,28 +1,28 @@
 using MediatR;
-using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Domain.Repositories;
 
 namespace QuitSmokingApi.Features.Motivation.GetRandomQuote;
 
 public class GetRandomQuoteHandler : IRequestHandler<GetRandomQuoteQuery, MotivationalQuoteDto>
 {
-    private readonly AppDbContext _context;
+    private readonly IMotivationalQuoteRepository _motivationalQuoteRepository;
 
-    public GetRandomQuoteHandler(AppDbContext context)
+    public GetRandomQuoteHandler(IMotivationalQuoteRepository motivationalQuoteRepository)
     {
-        _context = context;
+        _motivationalQuoteRepository = motivationalQuoteRepository;
     }
 
-    public Task<MotivationalQuoteDto> Handle(GetRandomQuoteQuery request, CancellationToken cancellationToken)
+    public async Task<MotivationalQuoteDto> Handle(GetRandomQuoteQuery request, CancellationToken cancellationToken)
     {
-        var quotes = _context.MotivationalQuotes.ToList();
+        var quotes = await _motivationalQuoteRepository.GetAllAsync(cancellationToken);
         var random = new Random();
         var quote = quotes[random.Next(quotes.Count)];
         
-        return Task.FromResult(new MotivationalQuoteDto(
+        return new MotivationalQuoteDto(
             Id: quote.Id,
             Quote: quote.Quote,
             Author: quote.Author,
             Category: quote.Category.ToString()
-        ));
+        );
     }
 }

@@ -3,9 +3,9 @@ using QuitSmokingApi.Domain.Common;
 namespace QuitSmokingApi.Domain.Aggregates;
 
 /// <summary>
-/// Aggregate root for achievements earned during the quit journey
+/// Aggregate root for achievements that can be earned during the quit journey
 /// </summary>
-public class Achievement : Entity
+public class Achievement : AggregateRoot
 {
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;

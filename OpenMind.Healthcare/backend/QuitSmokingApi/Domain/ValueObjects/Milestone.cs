@@ -1,9 +1,10 @@
 using QuitSmokingApi.Domain.Common;
 
-namespace QuitSmokingApi.Domain.Aggregates;
+namespace QuitSmokingApi.Domain.ValueObjects;
 
 /// <summary>
-/// Value object representing a milestone in the quit journey
+/// Value object representing a milestone in the quit journey.
+/// Value objects are immutable and identified by their values, not by an ID.
 /// </summary>
 public class Milestone : ValueObject
 {
@@ -60,8 +61,6 @@ public class Milestone : ValueObject
     public bool IsAchieved(int currentDays) => currentDays >= RequiredDays;
     
     public int GetDaysRemaining(int currentDays) => Math.Max(0, RequiredDays - currentDays);
-    
-    public double GetProgress(int currentDays) => Math.Min(100, (double)currentDays / RequiredDays * 100);
     
     protected override IEnumerable<object?> GetEqualityComponents()
     {

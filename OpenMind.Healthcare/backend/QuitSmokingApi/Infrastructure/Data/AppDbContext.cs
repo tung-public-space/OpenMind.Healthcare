@@ -12,7 +12,6 @@ public class AppDbContext : DbContext
 
     public DbSet<QuitJourney> QuitJourneys { get; set; }
     public DbSet<Achievement> Achievements { get; set; }
-    public DbSet<UserAchievement> UserAchievements { get; set; }
     public DbSet<MotivationalQuote> MotivationalQuotes { get; set; }
     public DbSet<CravingTip> CravingTips { get; set; }
 
@@ -47,7 +46,7 @@ public class AppDbContext : DbContext
             entity.Ignore(e => e.DomainEvents);
         });
         
-        // Configure Achievement
+        // Configure Achievement aggregate root
         modelBuilder.Entity<Achievement>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -56,30 +55,24 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Icon).HasMaxLength(10);
             entity.Property(e => e.RequiredDays).IsRequired();
             entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Ignore(e => e.DomainEvents);
         });
         
-        // Configure UserAchievement
-        modelBuilder.Entity<UserAchievement>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.UserId).IsRequired();
-            entity.Property(e => e.UnlockedAt).IsRequired();
-            entity.HasOne(e => e.Achievement).WithMany().HasForeignKey(e => e.AchievementId);
-            entity.Ignore(e => e.DomainEvents);
-        });
-        
-        // Configure MotivationalQuote
+        // Configure MotivationalQuote aggregate root
         modelBuilder.Entity<MotivationalQuote>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Quote).IsRequired().HasMaxLength(500);
             entity.Property(e => e.Author).HasMaxLength(100);
             entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Ignore(e => e.DomainEvents);
         });
         
-        // Configure CravingTip
+        // Configure CravingTip aggregate root
         modelBuilder.Entity<CravingTip>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -87,6 +80,8 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.Icon).HasMaxLength(10);
             entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Ignore(e => e.DomainEvents);
         });
     }

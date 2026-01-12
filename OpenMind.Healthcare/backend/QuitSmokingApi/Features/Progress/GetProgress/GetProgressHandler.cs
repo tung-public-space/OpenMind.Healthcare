@@ -1,19 +1,18 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using QuitSmokingApi.Domain.Aggregates;
-using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Domain.Repositories;
 using QuitSmokingApi.Services;
 
 namespace QuitSmokingApi.Features.Progress.GetProgress;
 
 public class GetProgressHandler : IRequestHandler<GetProgressQuery, QuitJourney?>
 {
-    private readonly AppDbContext _context;
+    private readonly IQuitJourneyRepository _journeyRepository;
     private readonly IUserService _userService;
 
-    public GetProgressHandler(AppDbContext context, IUserService userService)
+    public GetProgressHandler(IQuitJourneyRepository journeyRepository, IUserService userService)
     {
-        _context = context;
+        _journeyRepository = journeyRepository;
         _userService = userService;
     }
 
@@ -22,9 +21,6 @@ public class GetProgressHandler : IRequestHandler<GetProgressQuery, QuitJourney?
         var userId = _userService.GetCurrentUserId() 
             ?? throw new UnauthorizedAccessException("User not authenticated");
 
-        var journey = await _context.QuitJourneys
-            .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
-        
-        return journey;
+        return await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
     }
 }

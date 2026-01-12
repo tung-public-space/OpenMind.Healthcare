@@ -1,10 +1,10 @@
 using QuitSmokingApi.Domain.Common;
-using QuitSmokingApi.Domain.ValueObjects;
 
-namespace QuitSmokingApi.Domain.Aggregates;
+namespace QuitSmokingApi.Domain.ValueObjects;
 
 /// <summary>
-/// Value object representing progress statistics - read-only snapshot of journey progress
+/// Value object representing progress statistics - read-only snapshot of journey progress.
+/// Value objects are immutable and identified by their values, not by an ID.
 /// </summary>
 public class ProgressStatistics : ValueObject
 {

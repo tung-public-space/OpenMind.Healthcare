@@ -1,32 +1,31 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using QuitSmokingApi.Domain.Aggregates;
+using QuitSmokingApi.Domain.Repositories;
 using QuitSmokingApi.Domain.ValueObjects;
-using QuitSmokingApi.Infrastructure.Data;
 using QuitSmokingApi.Services;
 
 namespace QuitSmokingApi.Features.Progress.GetStats;
 
 /// <summary>
-/// Handler that leverages the rich domain model to calculate statistics
-/// The business logic is now encapsulated in the QuitJourney aggregate
+/// Handler that leverages the rich domain model to calculate statistics.
+/// Uses repository for data access following DDD principles.
 /// </summary>
 public class GetStatsHandler : IRequestHandler<GetStatsQuery, ProgressStatistics>
 {
-    private readonly AppDbContext _context;
+    private readonly IQuitJourneyRepository _journeyRepository;
     private readonly UserService _userService;
 
-    public GetStatsHandler(AppDbContext context, UserService userService)
+    public GetStatsHandler(IQuitJourneyRepository journeyRepository, UserService userService)
     {
-        _context = context;
+        _journeyRepository = journeyRepository;
         _userService = userService;
     }
 
     public async Task<ProgressStatistics> Handle(GetStatsQuery request, CancellationToken cancellationToken)
     {
-        var userId = _userService.GetCurrentUserId();
+        var userId = _userService.GetCurrentUserId()
+            ?? throw new UnauthorizedAccessException("User not authenticated");
         
-        var journey = await _context.QuitJourneys.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+        var journey = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
         
         if (journey == null)
         {

@@ -1,44 +1,56 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using QuitSmokingApi.Infrastructure.Data;
+using QuitSmokingApi.Domain.Repositories;
+using QuitSmokingApi.Domain.Services;
 using QuitSmokingApi.Services;
 
 namespace QuitSmokingApi.Features.Achievements.GetAllAchievements;
 
 /// <summary>
-/// Handler that uses domain model for achievement calculations
+/// Handler that uses domain services and repositories following DDD principles.
+/// The business logic is encapsulated in the domain service.
 /// </summary>
 public class GetAllAchievementsHandler : IRequestHandler<GetAllAchievementsQuery, List<AchievementDto>>
 {
-    private readonly AppDbContext _context;
+    private readonly IAchievementRepository _achievementRepository;
+    private readonly IQuitJourneyRepository _journeyRepository;
+    private readonly AchievementStatusService _achievementStatusService;
     private readonly UserService _userService;
 
-    public GetAllAchievementsHandler(AppDbContext context, UserService userService)
+    public GetAllAchievementsHandler(
+        IAchievementRepository achievementRepository,
+        IQuitJourneyRepository journeyRepository,
+        AchievementStatusService achievementStatusService,
+        UserService userService)
     {
-        _context = context;
+        _achievementRepository = achievementRepository;
+        _journeyRepository = journeyRepository;
+        _achievementStatusService = achievementStatusService;
         _userService = userService;
     }
 
     public async Task<List<AchievementDto>> Handle(GetAllAchievementsQuery request, CancellationToken cancellationToken)
     {
-        var userId = _userService.GetCurrentUserId();
+        var userId = _userService.GetCurrentUserId() 
+            ?? throw new UnauthorizedAccessException("User not authenticated");
         
-        var achievements = await _context.Achievements.OrderBy(a => a.RequiredDays).ToListAsync(cancellationToken);
-        var journey = await _context.QuitJourneys.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
-        var daysSinceQuit = journey?.GetDaysSmokeFree() ?? 0;
+        // Use repositories to fetch aggregates
+        var achievements = await _achievementRepository.GetAllOrderedByRequiredDaysAsync(cancellationToken);
+        var journey = await _journeyRepository.GetByUserIdAsync(userId, cancellationToken);
 
-        var dtos = achievements.Select(a => new AchievementDto(
-            Id: a.Id,
-            Name: a.Name,
-            Description: a.Description,
-            Icon: a.Icon,
-            RequiredDays: a.RequiredDays,
-            Category: a.Category.ToString(),
-            IsUnlocked: a.IsUnlockedFor(daysSinceQuit),
-            UnlockedAt: a.IsUnlockedFor(daysSinceQuit) && journey != null 
-                ? journey.QuitDate.AddDays(a.RequiredDays) 
-                : null,
-            ProgressPercentage: Math.Round(a.GetProgress(daysSinceQuit), 2)
+        // Delegate business logic to domain service
+        var statuses = _achievementStatusService.ComputeStatuses(achievements, journey);
+
+        // Map to DTOs
+        var dtos = statuses.Select(s => new AchievementDto(
+            Id: s.AchievementId,
+            Name: s.Name,
+            Description: s.Description,
+            Icon: s.Icon,
+            RequiredDays: s.RequiredDays,
+            Category: s.Category,
+            IsUnlocked: s.IsUnlocked,
+            UnlockedAt: s.UnlockedAt,
+            ProgressPercentage: s.ProgressPercentage
         )).ToList();
 
         return dtos;

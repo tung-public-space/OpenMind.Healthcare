@@ -1,5 +1,5 @@
 using MediatR;
-using QuitSmokingApi.Domain.Aggregates;
+using QuitSmokingApi.Domain.ValueObjects;
 
 namespace QuitSmokingApi.Features.Progress.GetStats;
 
