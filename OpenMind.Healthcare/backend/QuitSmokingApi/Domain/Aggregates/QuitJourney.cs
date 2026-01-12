@@ -22,7 +22,7 @@ public class QuitJourney : AggregateRoot
         QuitDate = quitDate;
         SmokingHabits = smokingHabits;
         
-        AddDomainEvent(new JourneyStartedEvent(Id, quitDate));
+        Emit(new JourneyStartedEvent(Id, quitDate));
     }
     
     public static QuitJourney Start(Guid userId, DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
@@ -52,7 +52,7 @@ public class QuitJourney : AggregateRoot
         SmokingHabits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack, currency);
         SetUpdated();
         
-        AddDomainEvent(new JourneyUpdatedEvent(Id, quitDate));
+        Emit(new JourneyUpdatedEvent(Id, quitDate));
     }
     
     public ProgressStatistics GetStatistics(DateTime? asOf = null)

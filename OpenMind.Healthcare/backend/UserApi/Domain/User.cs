@@ -32,7 +32,7 @@ public class User : AggregateRoot
             throw new DomainException("Password hash is required");
 
         var user = new User(email, passwordHash, firstName, lastName);
-        user.AddDomainEvent(new UserRegisteredEvent(user.Id, user.Email));
+        user.Emit(new UserRegisteredEvent(user.Id, user.Email));
         return user;
     }
 
@@ -40,7 +40,7 @@ public class User : AggregateRoot
     {
         LastLoginAt = DateTime.UtcNow;
         SetUpdated();
-        AddDomainEvent(new UserLoggedInEvent(Id, LastLoginAt.Value));
+        Emit(new UserLoggedInEvent(Id, LastLoginAt.Value));
     }
 
     public void UpdateProfile(string firstName, string lastName)
@@ -48,7 +48,7 @@ public class User : AggregateRoot
         FirstName = firstName;
         LastName = lastName;
         SetUpdated();
-        AddDomainEvent(new ProfileUpdatedEvent(Id, firstName, lastName));
+        Emit(new ProfileUpdatedEvent(Id, firstName, lastName));
     }
 
     public void ChangePassword(string newPasswordHash)
@@ -58,7 +58,7 @@ public class User : AggregateRoot
             
         PasswordHash = newPasswordHash;
         SetUpdated();
-        AddDomainEvent(new PasswordChangedEvent(Id));
+        Emit(new PasswordChangedEvent(Id));
     }
 
     public void Deactivate()

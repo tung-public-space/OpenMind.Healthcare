@@ -11,7 +11,7 @@ public abstract class Entity
     
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
     
-    protected void AddDomainEvent(IDomainEvent domainEvent)
+    protected void Emit(IDomainEvent domainEvent)
     {
         _domainEvents.Add(domainEvent);
     }
