@@ -4,6 +4,7 @@ import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
+  standalone: false,
   template: `
     <app-navbar *ngIf="showNavbar"></app-navbar>
     <main class="main-content" [class.full-height]="!showNavbar">

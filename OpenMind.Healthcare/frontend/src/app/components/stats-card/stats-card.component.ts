@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-stats-card',
+  standalone: false,
   template: `
     <div class="stats-card" [class]="colorClass">
       <div class="icon">{{ icon }}</div>

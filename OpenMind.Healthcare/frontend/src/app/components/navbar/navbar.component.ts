@@ -5,6 +5,7 @@ import { User } from '../../models/models';
 
 @Component({
   selector: 'app-navbar',
+  standalone: false,
   template: `
     <nav class="navbar">
       <div class="navbar-brand" (click)="navigate('/dashboard')">

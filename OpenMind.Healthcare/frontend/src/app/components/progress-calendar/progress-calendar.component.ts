@@ -21,6 +21,7 @@ interface CalendarWeek {
 
 @Component({
   selector: 'app-progress-calendar',
+  standalone: false,
   template: `
     <div class="calendar-container fade-in">
       <div class="calendar-header">

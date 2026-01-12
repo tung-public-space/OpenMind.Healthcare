@@ -4,6 +4,7 @@ import { Achievement } from '../../models/models';
 
 @Component({
   selector: 'app-achievements',
+  standalone: false,
   template: `
     <div class="achievements-page fade-in">
       <div class="page-header">

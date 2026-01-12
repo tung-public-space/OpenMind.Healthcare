@@ -4,6 +4,7 @@ import { MotivationalQuote, ProgressStats } from '../../models/models';
 
 @Component({
   selector: 'app-motivation',
+  standalone: false,
   template: `
     <div class="motivation-page fade-in">
       <div class="page-header">

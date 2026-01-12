@@ -4,6 +4,7 @@ import { HealthMilestone } from '../../models/models';
 
 @Component({
   selector: 'app-health-milestones',
+  standalone: false,
   template: `
     <div class="health-page fade-in">
       <div class="page-header">

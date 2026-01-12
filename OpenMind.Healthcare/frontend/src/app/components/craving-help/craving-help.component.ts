@@ -4,6 +4,7 @@ import { CravingTip } from '../../models/models';
 
 @Component({
   selector: 'app-craving-help',
+  standalone: false,
   template: `
     <div class="craving-page fade-in">
       <div class="emergency-header">

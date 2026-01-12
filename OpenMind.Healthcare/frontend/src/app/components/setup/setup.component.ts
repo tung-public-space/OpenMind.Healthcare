@@ -5,6 +5,7 @@ import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-setup',
+  standalone: false,
   template: `
     <div class="setup-page fade-in">
       <div class="card setup-card">

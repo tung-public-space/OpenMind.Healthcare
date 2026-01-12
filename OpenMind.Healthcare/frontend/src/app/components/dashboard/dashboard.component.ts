@@ -6,6 +6,7 @@ import { ProgressStats, DailyEncouragement, UserProgress } from '../../models/mo
 
 @Component({
   selector: 'app-dashboard',
+  standalone: false,
   template: `
     <div class="dashboard fade-in">
       <!-- Setup prompt if no progress -->
