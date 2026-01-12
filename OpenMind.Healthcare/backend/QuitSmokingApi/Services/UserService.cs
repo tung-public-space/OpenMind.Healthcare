@@ -8,18 +8,11 @@ public interface IUserService
     string? GetCurrentUserEmail();
 }
 
-public class UserService : IUserService
+public class UserService(IHttpContextAccessor httpContextAccessor) : IUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public UserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
     public Guid? GetCurrentUserId()
     {
-        var userIdClaim = _httpContextAccessor.HttpContext?.User
+        var userIdClaim = httpContextAccessor.HttpContext?.User
             .FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
@@ -27,7 +20,7 @@ public class UserService : IUserService
 
     public string? GetCurrentUserEmail()
     {
-        return _httpContextAccessor.HttpContext?.User
+        return httpContextAccessor.HttpContext?.User
             .FindFirst(ClaimTypes.Email)?.Value;
     }
 }

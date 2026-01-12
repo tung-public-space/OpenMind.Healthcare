@@ -5,16 +5,9 @@ namespace QuitSmokingApi.Domain.Events;
 /// <summary>
 /// Domain event raised when a quit journey is updated
 /// </summary>
-public class JourneyUpdatedEvent : IDomainEvent
+public class JourneyUpdatedEvent(Guid journeyId, DateTime newQuitDate) : IDomainEvent
 {
-    public Guid JourneyId { get; }
-    public DateTime NewQuitDate { get; }
-    public DateTime OccurredOn { get; }
-    
-    public JourneyUpdatedEvent(Guid journeyId, DateTime newQuitDate)
-    {
-        JourneyId = journeyId;
-        NewQuitDate = newQuitDate;
-        OccurredOn = DateTime.UtcNow;
-    }
+    public Guid JourneyId { get; } = journeyId;
+    public DateTime NewQuitDate { get; } = newQuitDate;
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
 }

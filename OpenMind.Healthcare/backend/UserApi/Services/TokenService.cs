@@ -12,18 +12,11 @@ public interface ITokenService
     ClaimsPrincipal? ValidateToken(string token);
 }
 
-public class TokenService : ITokenService
+public class TokenService(IConfiguration configuration) : ITokenService
 {
-    private readonly IConfiguration _configuration;
-
-    public TokenService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     public string GenerateToken(User user)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -35,8 +28,8 @@ public class TokenService : ITokenService
         };
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: configuration["Jwt:Issuer"],
+            audience: configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: credentials
@@ -48,7 +41,7 @@ public class TokenService : ITokenService
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!);
+        var key = Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!);
 
         try
         {
@@ -57,9 +50,9 @@ public class TokenService : ITokenService
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
-                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidIssuer = configuration["Jwt:Issuer"],
                 ValidateAudience = true,
-                ValidAudience = _configuration["Jwt:Audience"],
+                ValidAudience = configuration["Jwt:Audience"],
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             }, out _);
