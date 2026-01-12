@@ -4,8 +4,15 @@ export interface UserProgress {
   cigarettesPerDay: number;
   pricePerPack: number;
   cigarettesPerPack: number;
+  currency: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MoneySaved {
+  amount: number;
+  currency: string;
+  symbol: string;
 }
 
 export interface ProgressStats {
@@ -13,7 +20,7 @@ export interface ProgressStats {
   hoursSmokeFree: number;
   minutesSmokeFree: number;
   cigarettesNotSmoked: number;
-  moneySaved: number;
+  moneySaved: MoneySaved | number;
   lifeRegainedMinutes: number;
   lifeRegainedFormatted: string;
   progressPercentage: number;

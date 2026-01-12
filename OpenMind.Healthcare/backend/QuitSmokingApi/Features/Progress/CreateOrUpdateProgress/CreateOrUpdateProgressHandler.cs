@@ -9,7 +9,8 @@ public record CreateOrUpdateProgressCommand(
     DateTime QuitDate,
     int CigarettesPerDay,
     decimal PricePerPack,
-    int CigarettesPerPack
+    int CigarettesPerPack,
+    string Currency = "USD"
 ) : IRequest<QuitJourney>;
 
 public class CreateOrUpdateProgressHandler(
@@ -29,7 +30,8 @@ public class CreateOrUpdateProgressHandler(
                 request.QuitDate, 
                 request.CigarettesPerDay, 
                 request.CigarettesPerPack, 
-                request.PricePerPack);
+                request.PricePerPack,
+                request.Currency);
             await journeyRepository.UpdateAsync(existing, cancellationToken);
             return existing;
         }
@@ -39,7 +41,8 @@ public class CreateOrUpdateProgressHandler(
             request.QuitDate,
             request.CigarettesPerDay,
             request.CigarettesPerPack,
-            request.PricePerPack);
+            request.PricePerPack,
+            request.Currency);
         
         await journeyRepository.AddAsync(journey, cancellationToken);
         return journey;

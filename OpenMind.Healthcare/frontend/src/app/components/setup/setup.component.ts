@@ -38,26 +38,36 @@ import { ApiService } from '../../services/api.service';
 
           <div class="form-row">
             <div class="form-group">
-              <label for="pricePerPack">Price per pack ($)</label>
+              <label for="currency">Currency</label>
+              <select 
+                id="currency" 
+                formControlName="currency">
+                <option value="USD">USD ($)</option>
+                <option value="VND">VND (\u20ab)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="pricePerPack">Price per pack ({{ getCurrencySymbol() }})</label>
               <input 
                 type="number" 
                 id="pricePerPack" 
                 formControlName="pricePerPack"
                 min="0.01" 
                 step="0.01"
-                placeholder="e.g., 10.00">
+                [placeholder]="getCurrencyPlaceholder()">
             </div>
+          </div>
 
-            <div class="form-group">
-              <label for="cigarettesPerPack">Cigarettes per pack</label>
-              <input 
-                type="number" 
-                id="cigarettesPerPack" 
-                formControlName="cigarettesPerPack"
-                min="1" 
-                max="50"
-                placeholder="e.g., 20">
-            </div>
+          <div class="form-group">
+            <label for="cigarettesPerPack">Cigarettes per pack</label>
+            <input 
+              type="number" 
+              id="cigarettesPerPack" 
+              formControlName="cigarettesPerPack"
+              min="1" 
+              max="50"
+              placeholder="e.g., 20">
           </div>
 
           <div class="motivation-section">
@@ -120,10 +130,18 @@ import { ApiService } from '../../services/api.service';
         color: rgba(255, 255, 255, 0.9);
       }
       
-      input {
+      input, select {
         width: 100%;
         padding: 14px 16px;
         font-size: 16px;
+      }
+
+      select {
+        background-color: #1a1a2e;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
       }
       
       .hint {
@@ -209,9 +227,18 @@ export class SetupComponent {
     this.setupForm = this.fb.group({
       quitDate: [twoWeeksAgo.toISOString().slice(0, 16), Validators.required],
       cigarettesPerDay: [20, [Validators.required, Validators.min(1), Validators.max(100)]],
+      currency: ['USD', Validators.required],
       pricePerPack: [10.00, [Validators.required, Validators.min(0.01)]],
       cigarettesPerPack: [20, [Validators.required, Validators.min(1), Validators.max(50)]]
     });
+  }
+
+  getCurrencySymbol(): string {
+    return this.setupForm.get('currency')?.value === 'VND' ? '\u20ab' : '$';
+  }
+
+  getCurrencyPlaceholder(): string {
+    return this.setupForm.get('currency')?.value === 'VND' ? 'e.g., 50000' : 'e.g., 10.00';
   }
 
   onSubmit(): void {
@@ -223,7 +250,8 @@ export class SetupComponent {
         quitDate: new Date(formValue.quitDate).toISOString(),
         cigarettesPerDay: formValue.cigarettesPerDay,
         pricePerPack: formValue.pricePerPack,
-        cigarettesPerPack: formValue.cigarettesPerPack
+        cigarettesPerPack: formValue.cigarettesPerPack,
+        currency: formValue.currency
       };
 
       this.apiService.saveProgress(progress).subscribe({

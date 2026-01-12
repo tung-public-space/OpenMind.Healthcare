@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { MotivationalQuote, ProgressStats } from '../../models/models';
+import { MotivationalQuote, ProgressStats, MoneySaved } from '../../models/models';
 
 @Component({
   selector: 'app-motivation',
@@ -33,7 +33,7 @@ import { MotivationalQuote, ProgressStats } from '../../models/models';
             <span class="stat-text">Days of Freedom</span>
           </div>
           <div class="reminder-stat gold">
-            <span class="big-number">\${{ stats.moneySaved | number:'1.0-0' }}</span>
+            <span class="big-number">{{ formatMoney(stats.moneySaved) }}</span>
             <span class="stat-text">Money Saved</span>
           </div>
           <div class="reminder-stat blue">
@@ -407,5 +407,43 @@ export class MotivationComponent implements OnInit {
         });
       }
     });
+  }
+
+  formatMoney(money: MoneySaved | number | undefined): string {
+    if (!money) return '$0';
+    
+    let amount: number;
+    let currency: string;
+    
+    if (typeof money === 'number') {
+      amount = money;
+      currency = 'USD';
+    } else {
+      amount = money.amount;
+      currency = money.currency;
+    }
+    
+    // Format large numbers with abbreviations
+    if (currency === 'VND') {
+      if (amount >= 1000000) {
+        return `${(amount / 1000000).toFixed(1)}M \u20ab`;
+      }
+      if (amount >= 1000) {
+        return `${(amount / 1000).toFixed(0)}K \u20ab`;
+      }
+      return `${amount.toLocaleString('vi-VN')} \u20ab`;
+    }
+    
+    // USD formatting
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(2)}M`;
+    }
+    if (amount >= 10000) {
+      return `$${(amount / 1000).toFixed(1)}K`;
+    }
+    if (amount >= 1000) {
+      return `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+    }
+    return `$${Math.round(amount)}`;
   }
 }

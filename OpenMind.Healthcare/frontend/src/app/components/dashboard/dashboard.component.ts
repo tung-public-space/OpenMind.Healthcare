@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
-import { ProgressStats, DailyEncouragement, UserProgress } from '../../models/models';
+import { ProgressStats, DailyEncouragement, UserProgress, MoneySaved } from '../../models/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -63,7 +63,7 @@ import { ProgressStats, DailyEncouragement, UserProgress } from '../../models/mo
           </app-stats-card>
           <app-stats-card
             icon="💰"
-            [value]="'$' + ((stats.moneySaved | number:'1.2-2') || '0.00')"
+            [value]="formatMoney(stats.moneySaved)"
             label="Money Saved"
             colorClass="gold">
           </app-stats-card>
@@ -460,5 +460,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   navigate(path: string): void {
     this.router.navigate([path]);
+  }
+
+  formatMoney(money: MoneySaved | number | undefined): string {
+    if (!money) return '$0';
+    
+    let amount: number;
+    let currency: string;
+    
+    if (typeof money === 'number') {
+      amount = money;
+      currency = 'USD';
+    } else {
+      amount = money.amount;
+      currency = money.currency;
+    }
+    
+    // Format large numbers with abbreviations
+    if (currency === 'VND') {
+      if (amount >= 1000000) {
+        return `${(amount / 1000000).toFixed(1)}M \u20ab`;
+      }
+      if (amount >= 1000) {
+        return `${(amount / 1000).toFixed(0)}K \u20ab`;
+      }
+      return `${amount.toLocaleString('vi-VN')} \u20ab`;
+    }
+    
+    // USD formatting
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(2)}M`;
+    }
+    if (amount >= 10000) {
+      return `$${(amount / 1000).toFixed(1)}K`;
+    }
+    if (amount >= 1000) {
+      return `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+    }
+    return `$${amount.toFixed(2)}`;
   }
 }

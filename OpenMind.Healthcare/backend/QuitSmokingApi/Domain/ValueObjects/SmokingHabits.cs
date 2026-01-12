@@ -21,7 +21,7 @@ public class SmokingHabits : ValueObject
         PricePerPack = pricePerPack;
     }
     
-    public static SmokingHabits Create(int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack)
+    public static SmokingHabits Create(int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
     {
         if (cigarettesPerDay <= 0)
             throw new DomainException("Cigarettes per day must be greater than zero");
@@ -32,12 +32,12 @@ public class SmokingHabits : ValueObject
         if (pricePerPack <= 0)
             throw new DomainException("Price per pack must be greater than zero");
             
-        return new SmokingHabits(cigarettesPerDay, cigarettesPerPack, Money.Create(pricePerPack));
+        return new SmokingHabits(cigarettesPerDay, cigarettesPerPack, Money.Create(pricePerPack, currency));
     }
     
-    public Money PricePerCigarette => Money.Create(PricePerPack.Amount / CigarettesPerPack);
+    public Money PricePerCigarette => Money.Create(PricePerPack.Amount / CigarettesPerPack, PricePerPack.Currency);
     
-    public Money DailyCost => Money.Create(PricePerCigarette.Amount * CigarettesPerDay);
+    public Money DailyCost => Money.Create(PricePerCigarette.Amount * CigarettesPerDay, PricePerPack.Currency);
     
     protected override IEnumerable<object?> GetEqualityComponents()
     {

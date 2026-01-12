@@ -24,7 +24,7 @@ public class QuitJourney : AggregateRoot
         AddDomainEvent(new JourneyStartedEvent(Id, quitDate));
     }
     
-    public static QuitJourney Start(Guid userId, DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack)
+    public static QuitJourney Start(Guid userId, DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
     {
         var userIdSpec = QuitJourneySpecs.UserIdNotEmpty();
         if (!userIdSpec.IsSatisfiedBy(userId))
@@ -34,18 +34,18 @@ public class QuitJourney : AggregateRoot
         if (!quitDateSpec.IsSatisfiedBy(quitDate))
             throw new DomainException(quitDateSpec.RuleDescription);
             
-        var habits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack);
+        var habits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack, currency);
         return new QuitJourney(userId, quitDate, habits);
     }
     
-    public void Update(DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack)
+    public void Update(DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
     {
         var quitDateSpec = QuitJourneySpecs.ValidQuitDate();
         if (!quitDateSpec.IsSatisfiedBy(quitDate))
             throw new DomainException(quitDateSpec.RuleDescription);
             
         QuitDate = quitDate;
-        SmokingHabits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack);
+        SmokingHabits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack, currency);
         SetUpdated();
         
         AddDomainEvent(new JourneyUpdatedEvent(Id, quitDate));

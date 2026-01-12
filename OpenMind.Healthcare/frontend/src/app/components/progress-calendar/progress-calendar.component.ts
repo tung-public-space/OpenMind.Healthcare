@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { UserProgress, Achievement, ProgressStats } from '../../models/models';
+import { UserProgress, Achievement, ProgressStats, MoneySaved } from '../../models/models';
 
 interface CalendarDay {
   date: Date;
@@ -116,7 +116,7 @@ interface CalendarWeek {
             </div>
             <div class="detail-item">
               <span class="detail-icon">💰</span>
-              <span class="detail-value">\${{ selectedDay.moneySaved | number:'1.2-2' }}</span>
+              <span class="detail-value">{{ formatDayMoney(selectedDay.moneySaved) }}</span>
               <span class="detail-label">money saved</span>
             </div>
           </div>
@@ -150,7 +150,7 @@ interface CalendarWeek {
               <span class="summary-label">Total days smoke-free</span>
             </div>
             <div class="summary-item">
-              <span class="summary-value">\${{ stats.moneySaved | number:'1.2-2' }}</span>
+              <span class="summary-value">{{ formatTotalMoney() }}</span>
               <span class="summary-label">Total money saved</span>
             </div>
             <div class="summary-item">
@@ -793,5 +793,52 @@ export class ProgressCalendarComponent implements OnInit {
     return this.calendarWeeks.reduce((total, week) => {
       return total + week.days.filter(d => d.isCurrentMonth && d.status === 'smoke-free').length;
     }, 0);
+  }
+
+  formatDayMoney(amount: number): string {
+    const currency = this.progress?.currency || 'USD';
+    if (currency === 'VND') {
+      return `${amount.toLocaleString('vi-VN')} \u20ab`;
+    }
+    return `$${amount.toFixed(2)}`;
+  }
+
+  formatTotalMoney(): string {
+    if (!this.stats?.moneySaved) return '$0';
+    const money = this.stats.moneySaved;
+    
+    let amount: number;
+    let currency: string;
+    
+    if (typeof money === 'number') {
+      amount = money;
+      currency = 'USD';
+    } else {
+      amount = money.amount;
+      currency = money.currency;
+    }
+    
+    // Format large numbers with abbreviations
+    if (currency === 'VND') {
+      if (amount >= 1000000) {
+        return `${(amount / 1000000).toFixed(1)}M \u20ab`;
+      }
+      if (amount >= 1000) {
+        return `${(amount / 1000).toFixed(0)}K \u20ab`;
+      }
+      return `${amount.toLocaleString('vi-VN')} \u20ab`;
+    }
+    
+    // USD formatting
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(2)}M`;
+    }
+    if (amount >= 10000) {
+      return `$${(amount / 1000).toFixed(1)}K`;
+    }
+    if (amount >= 1000) {
+      return `$${amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+    }
+    return `$${amount.toFixed(2)}`;
   }
 }

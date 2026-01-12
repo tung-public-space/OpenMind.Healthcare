@@ -6,15 +6,16 @@ public class EncouragementService
 {
     public string GenerateEncouragementMessage(ProgressStatistics stats)
     {
+        var moneySavedStr = stats.MoneySaved.ToString();
         return stats.DaysSmokeFree switch
         {
             0 => "Today is Day 1! Every journey begins with a single step. You've made the most important decision of your life. Stay strong! 💪",
             1 => "Congratulations on completing your first day! The first 24 hours are the hardest. You're already proving you can do this! 🎉",
-            < 7 => $"Amazing! {stats.DaysSmokeFree} days smoke-free! You've already avoided {stats.CigarettesAvoided} cigarettes and saved ${stats.MoneySaved.Amount}. Keep pushing through! 💪",
-            < 14 => $"Week one complete! You're in week {stats.DaysSmokeFree / 7 + 1} now. Your body is already healing. You've saved ${stats.MoneySaved.Amount} and gained {stats.LifeRegained.ToFriendlyString()} of life! 🌟",
-            < 30 => $"Incredible progress! {stats.DaysSmokeFree} days strong! You're proving that you're stronger than any craving. ${stats.MoneySaved.Amount} saved and counting! 🏆",
-            < 90 => $"Over a month smoke-free! {stats.DaysSmokeFree} days of freedom. Your lungs are thanking you every breath. You've saved ${stats.MoneySaved.Amount}! 🎊",
-            _ => $"Legendary status! {stats.DaysSmokeFree} days smoke-free! You've transformed your life. ${stats.MoneySaved.Amount} saved, {stats.CigarettesAvoided} cigarettes avoided, {stats.LifeRegained.ToFriendlyString()} of life regained! 👑"
+            < 7 => $"Amazing! {stats.DaysSmokeFree} days smoke-free! You've already avoided {stats.CigarettesAvoided} cigarettes and saved {moneySavedStr}. Keep pushing through! 💪",
+            < 14 => $"Week one complete! You're in week {stats.DaysSmokeFree / 7 + 1} now. Your body is already healing. You've saved {moneySavedStr} and gained {stats.LifeRegained.ToFriendlyString()} of life! 🌟",
+            < 30 => $"Incredible progress! {stats.DaysSmokeFree} days strong! You're proving that you're stronger than any craving. {moneySavedStr} saved and counting! 🏆",
+            < 90 => $"Over a month smoke-free! {stats.DaysSmokeFree} days of freedom. Your lungs are thanking you every breath. You've saved {moneySavedStr}! 🎊",
+            _ => $"Legendary status! {stats.DaysSmokeFree} days smoke-free! You've transformed your life. {moneySavedStr} saved, {stats.CigarettesAvoided} cigarettes avoided, {stats.LifeRegained.ToFriendlyString()} of life regained! 👑"
         };
     }
     

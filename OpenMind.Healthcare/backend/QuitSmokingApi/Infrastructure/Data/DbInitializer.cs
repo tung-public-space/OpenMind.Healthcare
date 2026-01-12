@@ -6,15 +6,36 @@ public static class DbInitializer
 {
     public static void Initialize(AppDbContext context)
     {
-        if (context.MotivationalQuotes.Any())
-            return;
+        var hasChanges = false;
+        
+        if (!context.MotivationalQuotes.Any())
+        {
+            SeedMotivationalQuotes(context);
+            hasChanges = true;
+        }
+        
+        if (!context.CravingTips.Any())
+        {
+            SeedCravingTips(context);
+            hasChanges = true;
+        }
+        
+        if (!context.Achievements.Any())
+        {
+            SeedAchievements(context);
+            hasChanges = true;
+        }
+        
+        if (!context.HealthMilestones.Any())
+        {
+            SeedHealthMilestones(context);
+            hasChanges = true;
+        }
 
-        SeedMotivationalQuotes(context);
-        SeedCravingTips(context);
-        SeedAchievements(context);
-        SeedHealthMilestones(context);
-
-        context.SaveChanges();
+        if (hasChanges)
+        {
+            context.SaveChanges();
+        }
     }
     
     private static void SeedMotivationalQuotes(AppDbContext context)

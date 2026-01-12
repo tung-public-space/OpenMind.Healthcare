@@ -50,7 +50,17 @@ public class Money : ValueObject
         return new Money(Amount * factor, Currency);
     }
     
-    public override string ToString() => $"{Currency} {Amount:F2}";
+    public override string ToString() => Currency switch
+    {
+        "VND" => $"{Amount:N0} ₫",
+        _ => $"${Amount:F2}"
+    };
+    
+    public string GetSymbol() => Currency switch
+    {
+        "VND" => "₫",
+        _ => "$"
+    };
     
     protected override IEnumerable<object?> GetEqualityComponents()
     {
