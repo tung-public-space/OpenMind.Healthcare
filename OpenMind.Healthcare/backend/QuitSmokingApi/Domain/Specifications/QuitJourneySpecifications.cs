@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using DDD.BuildingBlocks;
+using DDD.BuildingBlocks.Specifications;
 
 namespace QuitSmokingApi.Domain.Specifications;
 

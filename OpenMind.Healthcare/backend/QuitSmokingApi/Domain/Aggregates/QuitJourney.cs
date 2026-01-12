@@ -1,5 +1,6 @@
 using DDD.BuildingBlocks;
 using QuitSmokingApi.Domain.Events;
+using QuitSmokingApi.Domain.Rules;
 using QuitSmokingApi.Domain.Specifications;
 using QuitSmokingApi.Domain.ValueObjects;
 
@@ -26,13 +27,15 @@ public class QuitJourney : AggregateRoot
     
     public static QuitJourney Start(Guid userId, DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
     {
+        // Check business rules using IBusinessRule pattern
+        CheckRule(new QuitDateCannotBeInFutureRule(quitDate));
+        CheckRule(new CigarettesPerDayMustBePositiveRule(cigarettesPerDay));
+        CheckRule(new PricePerPackMustBePositiveRule(pricePerPack));
+        
+        // Validate using Specification pattern
         var userIdSpec = QuitJourneySpecs.UserIdNotEmpty();
         if (!userIdSpec.IsSatisfiedBy(userId))
             throw new DomainException(userIdSpec.RuleDescription);
-        
-        var quitDateSpec = QuitJourneySpecs.ValidQuitDate();
-        if (!quitDateSpec.IsSatisfiedBy(quitDate))
-            throw new DomainException(quitDateSpec.RuleDescription);
             
         var habits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack, currency);
         return new QuitJourney(userId, quitDate, habits);
@@ -40,9 +43,10 @@ public class QuitJourney : AggregateRoot
     
     public void Update(DateTime quitDate, int cigarettesPerDay, int cigarettesPerPack, decimal pricePerPack, string currency = "USD")
     {
-        var quitDateSpec = QuitJourneySpecs.ValidQuitDate();
-        if (!quitDateSpec.IsSatisfiedBy(quitDate))
-            throw new DomainException(quitDateSpec.RuleDescription);
+        // Check business rules
+        CheckRule(new QuitDateCannotBeInFutureRule(quitDate));
+        CheckRule(new CigarettesPerDayMustBePositiveRule(cigarettesPerDay));
+        CheckRule(new PricePerPackMustBePositiveRule(pricePerPack));
             
         QuitDate = quitDate;
         SmokingHabits = SmokingHabits.Create(cigarettesPerDay, cigarettesPerPack, pricePerPack, currency);
