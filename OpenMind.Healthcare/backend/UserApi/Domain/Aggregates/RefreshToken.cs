@@ -1,6 +1,6 @@
 using DDD.BuildingBlocks;
 
-namespace UserApi.Domain;
+namespace UserApi.Domain.Aggregates;
 
 public class RefreshToken : AggregateRoot
 {

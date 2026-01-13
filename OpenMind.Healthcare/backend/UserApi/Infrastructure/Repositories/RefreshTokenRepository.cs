@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UserApi.Domain;
+using UserApi.Domain.Aggregates;
 using UserApi.Domain.Repositories;
 
 namespace UserApi.Infrastructure.Repositories;

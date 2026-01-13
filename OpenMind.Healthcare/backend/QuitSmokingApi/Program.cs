@@ -18,12 +18,10 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-// Add SQLite Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=quitSmoking.db";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// Add JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -43,23 +41,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Register services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IUserService>(provider => provider.GetRequiredService<UserService>());
 
-// Register repositories (each aggregate root has its own repository)
 builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
 builder.Services.AddScoped<IHealthMilestoneRepository, HealthMilestoneRepository>();
 builder.Services.AddScoped<IQuitJourneyRepository, QuitJourneyRepository>();
 builder.Services.AddScoped<IMotivationalQuoteRepository, MotivationalQuoteRepository>();
 builder.Services.AddScoped<ICravingTipRepository, CravingTipRepository>();
 
-// Register domain services
 builder.Services.AddScoped<AchievementStatusService>();
 builder.Services.AddScoped<HealthMilestoneStatusService>();
 
-// Add CORS for Angular frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -82,12 +76,10 @@ app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map feature endpoints (vertical slices)
 app.MapProgressEndpoints();
 app.MapAchievementsEndpoints();
 app.MapMotivationEndpoints();
 
-// Apply pending migrations and seed data before the application runs
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -99,7 +91,6 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
         logger.LogInformation("Database migrations applied successfully.");
         
-        // Seed initial data
         DbInitializer.Initialize(context);
     }
     catch (Exception ex)

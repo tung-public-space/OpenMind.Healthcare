@@ -1,7 +1,7 @@
 using DDD.BuildingBlocks;
 using UserApi.Domain.Events;
 
-namespace UserApi.Domain;
+namespace UserApi.Domain.Aggregates;
 
 public class User : AggregateRoot
 {

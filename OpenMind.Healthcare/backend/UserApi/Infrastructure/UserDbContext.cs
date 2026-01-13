@@ -2,6 +2,7 @@ using DDD.BuildingBlocks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UserApi.Domain;
+using UserApi.Domain.Aggregates;
 
 namespace UserApi.Infrastructure;
 

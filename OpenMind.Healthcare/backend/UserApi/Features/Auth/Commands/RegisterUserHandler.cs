@@ -1,5 +1,6 @@
 using MediatR;
 using UserApi.Domain;
+using UserApi.Domain.Aggregates;
 using UserApi.Domain.Repositories;
 using UserApi.Features.Auth.DTOs;
 using UserApi.Services;

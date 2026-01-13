@@ -1,3 +1,5 @@
+using UserApi.Domain.Aggregates;
+
 namespace UserApi.Domain.Repositories;
 
 public interface IRefreshTokenRepository

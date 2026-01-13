@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using UserApi.Domain;
+using UserApi.Domain.Aggregates;
 
 namespace UserApi.Services;
 
@@ -11,10 +12,6 @@ public interface ITokenService
 {
     string GenerateAccessToken(User user);
     RefreshToken GenerateRefreshToken(Guid userId, string ipAddress);
-    ClaimsPrincipal? ValidateToken(string token);
-    
-    [Obsolete("Use GenerateAccessToken instead")]
-    string GenerateToken(User user);
 }
 
 public class TokenService(IConfiguration configuration) : ITokenService
@@ -54,35 +51,5 @@ public class TokenService(IConfiguration configuration) : ITokenService
         var token = Convert.ToBase64String(randomBytes);
 
         return RefreshToken.Create(userId, token, RefreshTokenExpirationDays, ipAddress);
-    }
-
-    [Obsolete("Use GenerateAccessToken instead")]
-    public string GenerateToken(User user) => GenerateAccessToken(user);
-
-    public ClaimsPrincipal? ValidateToken(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!);
-
-        try
-        {
-            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidIssuer = configuration["Jwt:Issuer"],
-                ValidateAudience = true,
-                ValidAudience = configuration["Jwt:Audience"],
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            }, out _);
-
-            return principal;
-        }
-        catch
-        {
-            return null;
-        }
     }
 }
