@@ -92,7 +92,16 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RevokeTokenRequest {
+  refreshToken: string;
 }
 
 export interface User {

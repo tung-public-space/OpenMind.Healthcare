@@ -10,10 +10,12 @@ public record RegisterUserCommand(
     string Email,
     string Password,
     string? FirstName,
-    string? LastName) : IRequest<AuthResponse>;
+    string? LastName,
+    string? IpAddress) : IRequest<AuthResponse>;
 
 public class RegisterUserHandler(
     IUserRepository userRepository,
+    IRefreshTokenRepository refreshTokenRepository,
     ITokenService tokenService) : IRequestHandler<RegisterUserCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
@@ -44,14 +46,18 @@ public class RegisterUserHandler(
 
         await userRepository.AddAsync(user, cancellationToken);
 
-        var token = tokenService.GenerateToken(user);
+        var accessToken = tokenService.GenerateAccessToken(user);
+        var refreshToken = tokenService.GenerateRefreshToken(user.Id, request.IpAddress ?? "unknown");
+
+        await refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
 
         return new AuthResponse(
             user.Id,
             user.Email,
             user.FirstName,
             user.LastName,
-            token
+            accessToken,
+            refreshToken.Token
         );
     }
 }

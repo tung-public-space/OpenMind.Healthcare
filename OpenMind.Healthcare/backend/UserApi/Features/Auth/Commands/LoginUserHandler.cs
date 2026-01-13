@@ -5,10 +5,11 @@ using UserApi.Services;
 
 namespace UserApi.Features.Auth.Commands;
 
-public record LoginUserCommand(string Email, string Password) : IRequest<AuthResponse>;
+public record LoginUserCommand(string Email, string Password, string? IpAddress) : IRequest<AuthResponse>;
 
 public class LoginUserHandler(
     IUserRepository userRepository,
+    IRefreshTokenRepository refreshTokenRepository,
     ITokenService tokenService) : IRequestHandler<LoginUserCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(LoginUserCommand request, CancellationToken cancellationToken)
@@ -34,14 +35,18 @@ public class LoginUserHandler(
 
         await userRepository.UpdateAsync(user, cancellationToken);
 
-        var token = tokenService.GenerateToken(user);
+        var accessToken = tokenService.GenerateAccessToken(user);
+        var refreshToken = tokenService.GenerateRefreshToken(user.Id, request.IpAddress ?? "unknown");
+
+        await refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
 
         return new AuthResponse(
             user.Id,
             user.Email,
             user.FirstName,
             user.LastName,
-            token
+            accessToken,
+            refreshToken.Token
         );
     }
 }

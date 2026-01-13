@@ -19,7 +19,16 @@ public record AuthResponse(
     string Email,
     [property: JsonPropertyName("firstName")] string FirstName,
     [property: JsonPropertyName("lastName")] string LastName,
-    string Token
+    [property: JsonPropertyName("accessToken")] string AccessToken,
+    [property: JsonPropertyName("refreshToken")] string RefreshToken
+);
+
+public record RefreshTokenRequest(
+    [property: JsonPropertyName("refreshToken")] string RefreshToken
+);
+
+public record RevokeTokenRequest(
+    [property: JsonPropertyName("refreshToken")] string RefreshToken
 );
 
 public record UserDto(

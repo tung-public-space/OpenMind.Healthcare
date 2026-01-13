@@ -33,17 +33,27 @@ public static class AuthEndpoints
             .WithName("ChangePassword")
             .RequireAuthorization()
             .WithOpenApi();
+
+        group.MapPost("/refresh", RefreshToken)
+            .WithName("RefreshToken")
+            .WithOpenApi();
+
+        group.MapPost("/revoke", RevokeToken)
+            .WithName("RevokeToken")
+            .WithOpenApi();
     }
 
-    private static async Task<IResult> Register(RegisterRequest request, IMediator mediator)
+    private static async Task<IResult> Register(RegisterRequest request, HttpContext httpContext, IMediator mediator)
     {
         try
         {
+            var ipAddress = GetIpAddress(httpContext);
             var command = new RegisterUserCommand(
                 request.Email,
                 request.Password,
                 request.FirstName,
-                request.LastName
+                request.LastName,
+                ipAddress
             );
 
             var result = await mediator.Send(command);
@@ -59,11 +69,12 @@ public static class AuthEndpoints
         }
     }
 
-    private static async Task<IResult> Login(LoginRequest request, IMediator mediator)
+    private static async Task<IResult> Login(LoginRequest request, HttpContext httpContext, IMediator mediator)
     {
         try
         {
-            var command = new LoginUserCommand(request.Email, request.Password);
+            var ipAddress = GetIpAddress(httpContext);
+            var command = new LoginUserCommand(request.Email, request.Password, ipAddress);
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }
@@ -144,5 +155,54 @@ public static class AuthEndpoints
     {
         var userIdClaim = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    private static string? GetIpAddress(HttpContext httpContext)
+    {
+        if (httpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            return httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        }
+        return httpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+    }
+
+    private static async Task<IResult> RefreshToken(RefreshTokenRequest request, HttpContext httpContext, IMediator mediator)
+    {
+        try
+        {
+            var ipAddress = GetIpAddress(httpContext);
+            var command = new RefreshTokenCommand(request.RefreshToken, ipAddress);
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Results.Unauthorized();
+        }
+    }
+
+    private static async Task<IResult> RevokeToken(RevokeTokenRequest request, HttpContext httpContext, IMediator mediator)
+    {
+        try
+        {
+            var ipAddress = GetIpAddress(httpContext);
+            var command = new RevokeTokenCommand(request.RefreshToken, ipAddress);
+            var result = await mediator.Send(command);
+
+            if (!result)
+            {
+                return Results.BadRequest(new { message = "Token not found or already revoked" });
+            }
+
+            return Results.Ok(new { message = "Token revoked successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 }

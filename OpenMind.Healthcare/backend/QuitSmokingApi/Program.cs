@@ -87,12 +87,26 @@ app.MapProgressEndpoints();
 app.MapAchievementsEndpoints();
 app.MapMotivationEndpoints();
 
-// Initialize database
+// Apply pending migrations and seed data before the application runs
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("Applying database migrations...");
+        context.Database.Migrate();
+        logger.LogInformation("Database migrations applied successfully.");
+        
+        // Seed initial data
+        DbInitializer.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations.");
+        throw;
+    }
 }
 
 app.Run();

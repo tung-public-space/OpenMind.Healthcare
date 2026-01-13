@@ -8,6 +8,7 @@ namespace UserApi.Infrastructure;
 public class UserDbContext(DbContextOptions<UserDbContext> options, IMediator mediator) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -64,6 +65,41 @@ public class UserDbContext(DbContextOptions<UserDbContext> options, IMediator me
                 .IsRequired();
 
             entity.Property(u => u.UpdatedAt);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(rt => rt.Id);
+            entity.Ignore(rt => rt.DomainEvents);
+
+            entity.Property(rt => rt.Token)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            entity.HasIndex(rt => rt.Token)
+                .IsUnique();
+
+            entity.Property(rt => rt.UserId)
+                .IsRequired();
+
+            entity.HasIndex(rt => rt.UserId);
+
+            entity.Property(rt => rt.ExpiresAt)
+                .IsRequired();
+
+            entity.Property(rt => rt.CreatedByIp)
+                .HasMaxLength(50);
+
+            entity.Property(rt => rt.RevokedByIp)
+                .HasMaxLength(50);
+
+            entity.Property(rt => rt.ReplacedByToken)
+                .HasMaxLength(256);
+
+            entity.Property(rt => rt.CreatedAt)
+                .IsRequired();
+
+            entity.Property(rt => rt.UpdatedAt);
         });
     }
 }
