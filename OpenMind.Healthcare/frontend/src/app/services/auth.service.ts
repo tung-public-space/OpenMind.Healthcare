@@ -11,7 +11,7 @@ export class AuthService {
   private readonly ACCESS_TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly CURRENT_USER_KEY = 'currentUser';
-  private readonly userApiUrl = 'http://localhost:3004/api';
+  private readonly userApiUrl = '/user-api';
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();

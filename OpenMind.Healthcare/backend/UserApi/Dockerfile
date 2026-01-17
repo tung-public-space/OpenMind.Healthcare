@@ -6,16 +6,16 @@ WORKDIR /src
 COPY Shared/DDD.BuildingBlocks/DDD.BuildingBlocks.csproj Shared/DDD.BuildingBlocks/
 
 # Copy main project file
-COPY QuitSmokingApi/QuitSmokingApi.csproj QuitSmokingApi/
+COPY UserApi/UserApi.csproj UserApi/
 
 # Restore dependencies
-RUN dotnet restore QuitSmokingApi/QuitSmokingApi.csproj
+RUN dotnet restore UserApi/UserApi.csproj
 
 # Copy all source code
 COPY . .
 
 # Build and publish
-WORKDIR /src/QuitSmokingApi
+WORKDIR /src/UserApi
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Runtime stage
@@ -41,7 +41,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
-
-ENTRYPOINT ["dotnet", "QuitSmokingApi.dll"]
+ENTRYPOINT ["dotnet", "UserApi.dll"]

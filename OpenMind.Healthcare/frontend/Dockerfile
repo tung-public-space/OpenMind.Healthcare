@@ -20,8 +20,8 @@ FROM nginx:alpine AS runtime
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built app from build stage
-COPY --from=build /app/dist/quit-smoking-tracker /usr/share/nginx/html
+# Copy built app from build stage (Angular 17+ outputs to browser subdirectory)
+COPY --from=build /app/dist/quit-smoking-tracker/browser /usr/share/nginx/html
 
 EXPOSE 80
 

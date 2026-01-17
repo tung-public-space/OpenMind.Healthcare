@@ -21,7 +21,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:3003/api';
+  private baseUrl = '/api';
   
   private progressSubject = new BehaviorSubject<UserProgress | null>(null);
   public progress$ = this.progressSubject.asObservable();
